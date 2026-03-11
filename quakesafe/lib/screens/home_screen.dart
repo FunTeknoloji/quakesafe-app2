@@ -9,6 +9,8 @@ import '../widgets/compass_widget.dart';
 import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
 import '../widgets/placeholder_card.dart';
+import 'notifications/notifications_screen.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<HomeCard> _cards = [];
+  bool _isEditMode = false;
 
   final Map<String, IconData> _iconMap = {
     'quick_tools': Icons.bolt,
@@ -49,11 +52,11 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
       HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
       HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
+      HomeCard(id: 'family_groups', title: 'Aile Grupları', icon: _iconMap['family_groups']!),
       HomeCard(id: 'spirit_level', title: 'Su Terazisi', icon: _iconMap['spirit_level']!),
       HomeCard(id: 'compass', title: 'Pusula', icon: _iconMap['compass']!),
       HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
       HomeCard(id: 'assembly_areas', title: 'Toplanma Alanları', icon: _iconMap['assembly_areas']!),
-      HomeCard(id: 'family_groups', title: 'Aile Grupları', icon: _iconMap['family_groups']!),
       HomeCard(id: 'voice_assistant', title: 'Sesli Asistan', icon: _iconMap['voice_assistant']!),
       HomeCard(id: 'news', title: 'Haberler', icon: _iconMap['news']!),
       HomeCard(id: 'emergency_numbers', title: 'Acil Numaralar', icon: _iconMap['emergency_numbers']!),
@@ -66,9 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
       List<HomeCard> orderedCards = [];
       for (var id in order) {
         final card = defaultCards.firstWhere((element) => element.id == id, orElse: () => defaultCards.first);
-        orderedCards.add(card);
+        if (!orderedCards.any((e) => e.id == card.id)) orderedCards.add(card);
       }
-      // Add any missing cards
       for (var card in defaultCards) {
         if (!orderedCards.any((element) => element.id == card.id)) {
           orderedCards.add(card);
@@ -96,24 +98,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCardWidget(HomeCard card) {
+    Widget child;
     switch (card.id) {
       case 'quick_tools':
-        return QuickToolsWidget(key: ValueKey(card.id));
+        child = QuickToolsWidget(key: ValueKey(card.id));
+        break;
       case 'status_report':
-        return StatusReportWidget(key: ValueKey(card.id));
+        child = StatusReportWidget(key: ValueKey(card.id));
+        break;
       case 'last_quake':
-        return LastQuakeWidget(key: ValueKey(card.id));
+        child = LastQuakeWidget(key: ValueKey(card.id));
+        break;
       case 'spirit_level':
-        return SpiritLevelWidget(key: ValueKey(card.id));
+        child = SpiritLevelWidget(key: ValueKey(card.id));
+        break;
       case 'compass':
-        return CompassWidget(key: ValueKey(card.id));
+        child = CompassWidget(key: ValueKey(card.id));
+        break;
       case 'daily_tip':
-        return DailyTipWidget(key: ValueKey(card.id));
+        child = DailyTipWidget(key: ValueKey(card.id));
+        break;
       case 'assembly_areas':
-        return AssemblyAreaWidget(key: ValueKey(card.id));
+        child = AssemblyAreaWidget(key: ValueKey(card.id));
+        break;
       default:
-        return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
+        child = PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
     }
+    return child.animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0);
   }
 
   @override
@@ -123,32 +134,39 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("QuakeSafe"),
         actions: [
           IconButton(
+            icon: Icon(_isEditMode ? Icons.check : Icons.edit, color: Colors.purple),
+            onPressed: () => setState(() => _isEditMode = !_isEditMode),
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
             },
           ),
         ],
       ),
-      body: ReorderableListView(
-        onReorder: _onReorder,
-        children: _cards.map((card) => _buildCardWidget(card)).toList(),
-      ),
+      body: _isEditMode
+          ? ReorderableListView(
+              padding: const EdgeInsets.only(bottom: 20),
+              onReorder: _onReorder,
+              children: _cards.map((card) => _buildEditCard(card)).toList(),
+            )
+          : ListView(
+              padding: const EdgeInsets.only(bottom: 20),
+              children: _cards.map((card) => _buildCardWidget(card)).toList(),
+            ),
     );
   }
-}
 
-class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Bildirimler")),
-      body: const Center(child: Text("Henüz bildiriminiz yok.")),
+  Widget _buildEditCard(HomeCard card) {
+    return Card(
+      key: ValueKey("edit_${card.id}"),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListTile(
+        leading: Icon(card.icon, color: Colors.purple),
+        title: Text(card.title),
+        trailing: const Icon(Icons.drag_handle),
+      ),
     );
   }
 }

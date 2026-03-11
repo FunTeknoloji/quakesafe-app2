@@ -18,6 +18,12 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
   String? _currentlyPlaying;
 
   @override
+  void initState() {
+    super.initState();
+    _audioPlayer.setReleaseMode(ReleaseMode.loop);
+  }
+
+  @override
   void dispose() {
     _sosTimer?.cancel();
     _audioPlayer.dispose();
@@ -65,6 +71,7 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
       });
     } else {
       await _audioPlayer.stop();
+      // Use Source instead of AssetSource for dummy testing if needed, but AssetSource is correct for real assets
       await _audioPlayer.play(AssetSource(assetPath));
       setState(() {
         _currentlyPlaying = soundName;
@@ -79,7 +86,7 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
       children: [
         const Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text("Hızlı Araçlar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          child: Text("Hızlı Araçlar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -141,8 +148,9 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: active ? Colors.purple : Colors.grey[800],
-              borderRadius: BorderRadius.circular(15),
+              color: active ? Colors.purple : Colors.grey[900],
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: active ? Colors.white : Colors.white.withOpacity(0.1)),
             ),
             child: Icon(icon, color: Colors.white, size: 30),
           ),
