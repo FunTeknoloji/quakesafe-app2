@@ -3,14 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../screens/family/chat_screen.dart';
 
-class LastQuakeWidget extends StatefulWidget {
-  const LastQuakeWidget({super.key});
+class RecentChatsWidget extends StatefulWidget {
+  const RecentChatsWidget({super.key});
 
   @override
-  State<LastQuakeWidget> createState() => _LastQuakeWidgetState();
+  State<RecentChatsWidget> createState() => _RecentChatsWidgetState();
 }
 
-class _LastQuakeWidgetState extends State<LastQuakeWidget> {
+class _RecentChatsWidgetState extends State<RecentChatsWidget> {
   final _supabase = Supabase.instance.client;
   List<dynamic> _recentChats = [];
 
@@ -30,7 +30,6 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
 
       if (groupIds.isEmpty) return;
 
-      // Fetch groups and their last message
       final response = await _supabase
           .from('family_groups')
           .select('id, name, family_messages(message, created_at, type)')

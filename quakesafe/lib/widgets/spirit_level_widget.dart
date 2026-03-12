@@ -74,7 +74,7 @@ class _SpiritLevelWidgetState extends State<SpiritLevelWidget> {
                           width: 30,
                           height: 30,
                           decoration: BoxDecoration(
-                            color: Colors.purple.withOpacity(0.7),
+                            color: Colors.purple.withValues(alpha: 0.7),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),

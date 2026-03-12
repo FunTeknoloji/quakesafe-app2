@@ -76,12 +76,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       onDismissed: (_) => _deleteNotification(notif['id'].toString()),
                       child: Card(
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        color: isRead ? Colors.white.withOpacity(0.02) : Colors.white.withOpacity(0.08),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: isRead ? Colors.transparent : Colors.purple.withOpacity(0.3))),
+                        color: isRead ? Colors.white.withValues(alpha: 0.02) : Colors.white.withValues(alpha: 0.08),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: isRead ? Colors.transparent : Colors.purple.withValues(alpha: 0.3))),
                         child: ListTile(
                           leading: Container(
                             padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: (isRead ? Colors.grey : Colors.purple).withOpacity(0.1), shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: (isRead ? Colors.grey : Colors.purple).withValues(alpha: 0.1), shape: BoxShape.circle),
                             child: Icon(Icons.notifications_active, color: isRead ? Colors.grey : Colors.purple),
                           ),
                           title: Text(notif['title'] ?? "Bildirim", style: TextStyle(color: Colors.white, fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),

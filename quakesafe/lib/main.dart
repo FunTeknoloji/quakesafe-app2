@@ -7,7 +7,6 @@ import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/earthquakes/earthquakes_screen.dart';
 import 'screens/family/family_screen.dart';
-import 'screens/family/chat_screen.dart';
 import 'screens/other_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/intro/intro_screen.dart';

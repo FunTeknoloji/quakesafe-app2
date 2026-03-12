@@ -138,15 +138,38 @@ class _MeshNetworkScreenState extends State<MeshNetworkScreen> {
   }
 
   Widget _buildPTTControls() {
+    final TextEditingController meshMsgController = TextEditingController();
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
       decoration: const BoxDecoration(
         color: Color(0xFF0D0D0D),
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20)),
+                  child: TextField(
+                    controller: meshMsgController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(hintText: "Mesaj...", border: InputBorder.none, hintStyle: TextStyle(color: Colors.white24)),
+                  ),
+                ),
+              ),
+              IconButton(icon: const Icon(Icons.send, color: Colors.purple), onPressed: () {
+                 if (meshMsgController.text.isNotEmpty) {
+                    _sendMeshText(meshMsgController.text);
+                    meshMsgController.clear();
+                 }
+              }),
+            ],
+          ),
+          const SizedBox(height: 20),
           GestureDetector(
             onLongPressStart: (_) => _startTalking(),
             onLongPressEnd: (_) => _stopTalking(),

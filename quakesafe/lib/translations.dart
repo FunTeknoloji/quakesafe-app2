@@ -34,6 +34,16 @@ class AppTranslations {
       'weather': 'Hava Durumu',
       'emergency_call': 'Acil Çağrı',
       'disaster_plan': 'Afet Planı',
+      'personal_info': 'Kişisel Bilgiler',
+      'emergency_info': 'Hayati Bilgiler (Acil Durum)',
+      'city': 'İkamet Şehri',
+      'blood_type': 'Kan Grubu',
+      'height': 'Boy (cm)',
+      'weight': 'Kilo (kg)',
+      'birth_date': 'Doğum Tarihi',
+      'allergies': 'Alerjiler',
+      'medications': 'İlaçlar',
+      'forecast': '7 Günlük Tahmin',
     },
     'en': {
       'app_name': 'QuakeSafe',
@@ -69,6 +79,16 @@ class AppTranslations {
       'weather': 'Weather',
       'emergency_call': 'Emergency Call',
       'disaster_plan': 'Disaster Plan',
+      'personal_info': 'Personal Information',
+      'emergency_info': 'Critical Info (Emergency)',
+      'city': 'City of Residence',
+      'blood_type': 'Blood Type',
+      'height': 'Height (cm)',
+      'weight': 'Weight (kg)',
+      'birth_date': 'Birth Date',
+      'allergies': 'Allergies',
+      'medications': 'Medications',
+      'forecast': '7-Day Forecast',
     }
   };
 

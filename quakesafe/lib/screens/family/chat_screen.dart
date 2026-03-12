@@ -12,6 +12,8 @@ import '../../services/storage_service.dart';
 import '../../services/settings_provider.dart';
 import '../../services/mesh_service.dart';
 import 'package:hive/hive.dart';
+import 'package:dio/dio.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 class ChatScreen extends StatefulWidget {
@@ -257,8 +259,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _startCall(bool isVideo) {
-    // Agora Implementation would go here.
-    // For now, we open a real-time call UI simulator that "calls" the group.
+    _sendMessage(
+      type: 'text',
+      message: isVideo ? "📹 Görüntülü arama başlatıldı" : "📞 Sesli arama başlatıldı",
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -395,6 +400,23 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _downloadImage(String url) async {
+    try {
+      if (await Permission.storage.request().isGranted || await Permission.photos.request().isGranted) {
+        final dir = await getExternalStorageDirectory();
+        if (dir == null) return;
+
+        final String fileName = "QuakeSafe_${DateTime.now().millisecondsSinceEpoch}.jpg";
+        final String savePath = "${dir.path}/$fileName";
+
+        await Dio().download(url, savePath);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Görüntü indirildi: $savePath")));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("İndirme hatası: $e")));
+    }
+  }
+
   void _showFullImage(String url) {
     showDialog(
       context: context,
@@ -403,10 +425,8 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Stack(
           children: [
             Center(child: Image.network(url)),
-            Positioned(top: 40, left: 20, child: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context))),
-            Positioned(top: 40, right: 20, child: IconButton(icon: const Icon(Icons.download, color: Colors.white), onPressed: () {
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Görüntü indiriliyor... (Simüle)")));
-            })),
+            Positioned(top: 40, left: 20, child: IconButton(icon: const Icon(Icons.close, color: Colors.white, size: 30), onPressed: () => Navigator.pop(context))),
+            Positioned(top: 40, right: 20, child: IconButton(icon: const Icon(Icons.download, color: Colors.white, size: 30), onPressed: () => _downloadImage(url))),
           ],
         ),
       ),

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/home_card.dart';
 import '../services/storage_service.dart';
 import '../widgets/quick_tools_widget.dart';
-import '../widgets/last_quake_widget.dart';
+import '../widgets/recent_chats_widget.dart';
 import '../widgets/status_report_widget.dart';
 import '../widgets/spirit_level_widget.dart';
 import '../widgets/compass_widget.dart';
 import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
+import '../widgets/weather_widget.dart';
 import '../widgets/placeholder_card.dart';
 import 'notifications/notifications_screen.dart';
 import '../translations.dart';
@@ -69,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeCard(id: 'assembly_areas', title: 'Toplanma Alanları', icon: _iconMap['assembly_areas']!),
       HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
       HomeCard(id: 'quick_guides', title: 'Hızlı Rehberler', icon: _iconMap['quick_guides']!),
-      HomeCard(id: 'donate', title: 'Bağış Yap', icon: _iconMap['donate']!),
       HomeCard(id: 'weather', title: 'Hava Durumu', icon: _iconMap['weather']!),
       HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
       HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
@@ -108,11 +108,12 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (card.id) {
       case 'quick_tools': return QuickToolsWidget(key: ValueKey(card.id));
       case 'status_report': return StatusReportWidget(key: ValueKey(card.id));
-      case 'last_quake': return LastQuakeWidget(key: ValueKey(card.id));
+      case 'last_quake': return const RecentChatsWidget();
       case 'spirit_level': return SpiritLevelWidget(key: ValueKey(card.id));
       case 'compass': return CompassWidget(key: ValueKey(card.id));
       case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
+      case 'weather': return const WeatherWidget(key: ValueKey('weather_widget'));
       default: return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
     }
   }

@@ -70,7 +70,7 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(

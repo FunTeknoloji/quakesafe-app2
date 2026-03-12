@@ -7,6 +7,7 @@ import 'news_screen.dart';
 import 'weather_screen.dart';
 import 'emergency_call_screen.dart';
 import 'disaster_plan_screen.dart';
+import 'simple_info_screen.dart';
 
 class OtherScreen extends StatelessWidget {
   const OtherScreen({super.key});
@@ -156,12 +157,10 @@ class OtherScreen extends StatelessWidget {
     OtherItem("Afet Planı", "AİLE HAZIRLIĞI", Icons.assignment, Colors.red, screen: const DisasterPlanScreen()),
     OtherItem("Hava Durumu", "METEOROLOJİ", Icons.cloud, Colors.lightBlue, screen: const WeatherScreen()),
     OtherItem("Acil Çağrı", "TEK TUŞ YARDIM", Icons.phone_in_talk, Colors.redAccent, screen: const EmergencyCallScreen()),
-    OtherItem("Şehir Sohbeti", "YEREL MESAJLAR", Icons.forum_outlined, Colors.green),
-    OtherItem("Sağlık Haritası", "HASTANELER", Icons.local_hospital_outlined, Colors.pink),
-    OtherItem("Bağış Yap", "YARDIM ELİ", Icons.volunteer_activism_outlined, Colors.teal),
-    OtherItem("İlk Yardım", "TEMEL EĞİTİM", Icons.medical_services_outlined, Colors.indigo),
-    OtherItem("Rehberler", "DÖKÜMANTASYON", Icons.menu_book_outlined, Colors.deepOrange),
-    OtherItem("Ayarlar", "UYGULAMA KONTROL", Icons.settings_suggest_outlined, Colors.blueGrey),
+    OtherItem("Şehir Sohbeti", "YEREL MESAJLAR", Icons.forum_outlined, Colors.green, screen: const SimpleInfoScreen(title: "Şehir Sohbeti")),
+    OtherItem("Sağlık Haritası", "HASTANELER", Icons.local_hospital_outlined, Colors.pink, screen: const SimpleInfoScreen(title: "Sağlık Haritası")),
+    OtherItem("İlk Yardım", "TEMEL EĞİTİM", Icons.medical_services_outlined, Colors.indigo, screen: const SimpleInfoScreen(title: "İlk Yardım")),
+    OtherItem("Rehberler", "DÖKÜMANTASYON", Icons.menu_book_outlined, Colors.deepOrange, screen: const SimpleInfoScreen(title: "Rehberler")),
   ];
 }
 

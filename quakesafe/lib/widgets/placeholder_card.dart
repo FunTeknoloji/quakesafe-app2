@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class PlaceholderCard extends StatelessWidget {
   final String title;
@@ -13,11 +17,11 @@ class PlaceholderCard extends StatelessWidget {
          child: Row(
            children: [
              Expanded(
-               child: _emergencyBtn(Icons.phone, "112 ARA", Colors.red),
+               child: _emergencyBtn(Icons.phone, "112 ARA", Colors.red, onTap: () => FlutterPhoneDirectCaller.callNumber('112')),
              ),
              const SizedBox(width: 12),
              Expanded(
-               child: _emergencyBtn(Icons.campaign, "S.O.S (SMS)", const Color(0xFF1E1E1E)),
+               child: _emergencyBtn(Icons.campaign, "S.O.S (SMS)", const Color(0xFF1E1E1E), onTap: _sendSOS),
              ),
            ],
          ),
@@ -126,19 +130,39 @@ class PlaceholderCard extends StatelessWidget {
     );
   }
 
-  Widget _emergencyBtn(IconData icon, String label, Color color) {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(height: 12),
-          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
-        ],
+  Widget _emergencyBtn(IconData icon, String label, Color color, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(30)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(height: 12),
+            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _sendSOS() async {
+    final prefs = await SharedPreferences.getInstance();
+    final contactsJson = prefs.getString('emergency_contacts');
+    if (contactsJson != null) {
+      final List<dynamic> contacts = json.decode(contactsJson);
+      final String msg = prefs.getString('emergency_msg') ?? "Acil durum! Yardıma ihtiyacım var.";
+
+      for (var contact in contacts) {
+        final String number = contact['phone'];
+        final Uri smsUri = Uri.parse("sms:$number?body=${Uri.encodeComponent(msg)}");
+        if (await canLaunchUrl(smsUri)) {
+          await launchUrl(smsUri);
+        }
+      }
+    }
   }
 
   Widget _rehberBtn(IconData icon, String label) {

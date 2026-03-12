@@ -3,11 +3,32 @@ import 'package:flutter/material.dart';
 class DailyTipWidget extends StatelessWidget {
   const DailyTipWidget({super.key});
 
+  static const List<String> tips = [
+    "Deprem anında sakin kalın ve Çök-Kapan-Tutun hareketini yapın.",
+    "Evdeki ağır mobilyaları mutlaka duvara sabitleyin.",
+    "Afet çantanızı her 6 ayda bir kontrol edip güncelleyin.",
+    "Bina çıkış yollarını asla eşyalarla kapatmayın.",
+    "Evdeki her birey ana vanaların yerini ve nasıl kapatılacağını bilmelidir.",
+    "Deprem sonrası asansörleri asla kullanmayın.",
+    "Pencere önlerinden ve devrilebilecek ağır eşyalardan uzak durun.",
+    "Acil durum toplanma alanınızı e-devlet üzerinden öğrenin.",
+    "Yangın söndürme cihazının yerini ve kullanımını öğrenin.",
+    "Yataklarınızın yanına fener ve kalın tabanlı ayakkabı koyun.",
+    "Gaz kokusu alırsanız asla elektrik düğmelerine dokunmayın.",
+    "İlk yardım eğitimi alarak hayat kurtarabilirsiniz.",
+    "Binalarınızın deprem dayanıklılığını uzmanlara kontrol ettirin.",
+    "Elektrik şalterlerini ıslak ellerle asla kapatmaya çalışmayın.",
+    "Afet anında telefonları sadece hayati durumlar için kullanın.",
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final int dayIndex = DateTime.now().day % tips.length;
+    final String currentTip = tips[dayIndex];
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 100,
+      height: 110,
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
         borderRadius: BorderRadius.circular(30),
@@ -29,17 +50,17 @@ class DailyTipWidget extends StatelessWidget {
                   child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 15),
-                const Expanded(
+                Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("GÜNÜN BİLGİSİ", style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                      SizedBox(height: 4),
+                      const Text("GÜNÜN BİLGİSİ", style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      const SizedBox(height: 6),
                       Text(
-                        "Evdeki her aile bireyi ana vanaların kapatılacağını bilmelidir.",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                        maxLines: 2,
+                        currentTip,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],

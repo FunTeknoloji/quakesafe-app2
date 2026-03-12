@@ -29,10 +29,10 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: surfaceColor,
       elevation: 4,
-      shadowColor: primaryPurple.withOpacity(0.1),
+      shadowColor: primaryPurple.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
       ),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(

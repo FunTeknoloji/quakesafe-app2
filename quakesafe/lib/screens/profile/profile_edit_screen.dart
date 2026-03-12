@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../services/settings_provider.dart';
+import '../../translations.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final Map<String, dynamic> profile;
@@ -52,6 +55,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   Future<void> _save() async {
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Ad Soyad boş bırakılamaz.")));
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       await _supabase.from('profiles_quakesafe').update({
@@ -77,15 +84,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+    final String lang = settings.language;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Bilgileri Güncelle", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(AppTranslations.t('edit', lang), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.black,
         elevation: 0,
         actions: [
           if (_isLoading) const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(color: Colors.purple, strokeWidth: 2)))
-          else TextButton(onPressed: _save, child: const Text("Kaydet", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)))
+          else TextButton(onPressed: _save, child: Text(AppTranslations.t('save', lang), style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)))
         ],
       ),
       body: SingleChildScrollView(
@@ -93,27 +103,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Kişisel Bilgiler", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(AppTranslations.t('personal_info', lang), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 16),
             _buildTextField(_nameController, "Ad Soyad", Icons.person_outline),
             _buildTextField(_phoneController, "Telefon Numarası", Icons.phone_android_outlined),
-            _buildPicker("İkamet Şehri", _selectedCity, _cities, (v) => setState(() => _selectedCity = v)),
+            _buildPicker(AppTranslations.t('city', lang), _selectedCity, _cities, (v) => setState(() => _selectedCity = v)),
             _buildPicker("Cinsiyet", _selectedGender, _genders, (v) => setState(() => _selectedGender = v)),
-            _buildDatePicker(),
+            _buildDatePicker(lang),
 
             const SizedBox(height: 24),
-            const Text("Hayati Bilgiler (Acil Durum)", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(AppTranslations.t('emergency_info', lang), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 16),
-            _buildPicker("Kan Grubu", _selectedBloodType, _bloodTypes, (v) => setState(() => _selectedBloodType = v)),
+            _buildPicker(AppTranslations.t('blood_type', lang), _selectedBloodType, _bloodTypes, (v) => setState(() => _selectedBloodType = v)),
             Row(
               children: [
-                Expanded(child: _buildNumberPicker("Boy (cm)", _selectedHeight, 50, 250, (v) => setState(() => _selectedHeight = v))),
+                Expanded(child: _buildNumberPicker(AppTranslations.t('height', lang), _selectedHeight, 50, 250, (v) => setState(() => _selectedHeight = v))),
                 const SizedBox(width: 12),
-                Expanded(child: _buildNumberPicker("Kilo (kg)", _selectedWeight, 20, 300, (v) => setState(() => _selectedWeight = v))),
+                Expanded(child: _buildNumberPicker(AppTranslations.t('weight', lang), _selectedWeight, 20, 300, (v) => setState(() => _selectedWeight = v))),
               ],
             ),
-            _buildTextField(_allergiesController, "Kronik Alerjiler", Icons.warning_amber_outlined),
-            _buildTextField(_medsController, "Düzenli Kullanılan İlaçlar", Icons.medication_outlined),
+            _buildTextField(_allergiesController, AppTranslations.t('allergies', lang), Icons.warning_amber_outlined),
+            _buildTextField(_medsController, AppTranslations.t('medications', lang), Icons.medication_outlined),
             const SizedBox(height: 40),
           ],
         ),
@@ -191,7 +201,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     return _buildPicker(label, value?.toString(), List.generate(max - min + 1, (i) => (min + i).toString()), (v) => onSelect(int.parse(v)));
   }
 
-  Widget _buildDatePicker() {
+  Widget _buildDatePicker(String lang) {
     return GestureDetector(
       onTap: () async {
         final date = await showDatePicker(
@@ -214,9 +224,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Doğum Tarihi", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                Text(AppTranslations.t('birth_date', lang), style: const TextStyle(color: Colors.white38, fontSize: 10)),
                 const SizedBox(height: 4),
-                Text(_selectedBirthDate != null ? DateFormat('dd MMMM yyyy', 'tr').format(_selectedBirthDate!) : "Seçiniz", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+                Text(_selectedBirthDate != null ? DateFormat('dd MMMM yyyy', lang == "Türkçe" ? 'tr' : 'en').format(_selectedBirthDate!) : "Seçiniz", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
               ],
             ),
             const Icon(Icons.calendar_month_outlined, color: Colors.white24, size: 18),
