@@ -14,12 +14,13 @@ class _IntroScreenState extends State<IntroScreen> {
   bool _permissionsRequested = false;
 
   Future<void> _requestPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
+    await [
       Permission.camera,
       Permission.microphone,
       Permission.location,
       Permission.notification,
       Permission.storage,
+      Permission.contacts,
     ].request();
 
     setState(() {

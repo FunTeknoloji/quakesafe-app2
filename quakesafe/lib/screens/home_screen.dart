@@ -30,19 +30,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final Map<String, IconData> _iconMap = {
     'quick_tools': Icons.bolt,
-    'status_report': Icons.report,
-    'last_quake': Icons.waves,
-    'spirit_level': Icons.square_foot,
-    'compass': Icons.explore,
-    'daily_tip': Icons.lightbulb,
-    'assembly_areas': Icons.map,
-    'family_groups': Icons.group,
-    'voice_assistant': Icons.mic,
-    'news': Icons.newspaper,
     'emergency_numbers': Icons.phone,
+    'assembly_areas': Icons.map,
+    'daily_tip': Icons.lightbulb,
     'quick_guides': Icons.menu_book,
     'donate': Icons.volunteer_activism,
     'weather': Icons.cloud,
+    'last_quake': Icons.waves,
+    'status_report': Icons.report,
+    'compass': Icons.explore,
+    'spirit_level': Icons.square_foot,
   };
 
   @override
@@ -59,48 +56,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleWidgetAction(Uri? uri) async {
     if (uri == null) return;
-
     if (uri.host == 'status') {
       final type = uri.queryParameters['type'];
-      final bool isSafe = type == 'safe';
-      _reportStatusFromWidget(isSafe);
-    } else if (uri.host == 'tool') {
-      final type = uri.queryParameters['type'];
-      if (type == 'torch') {
-        try {
-          await TorchLight.enableTorch();
-        } catch (_) {
-          await TorchLight.disableTorch();
-        }
-      } else if (type == 'sos') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("SOS Modu Etkinleştirildi")));
-      } else if (type == 'whistle') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Düdük Sesi Çalınıyor")));
-      }
+      StatusReportWidget.reportStatus(context, type == 'safe');
     }
-  }
-
-  Future<void> _reportStatusFromWidget(bool isSafe) async {
-    await StatusReportWidget.reportStatus(context, isSafe);
   }
 
   void _loadCards() async {
     final order = await _storageService.getCardOrder();
     final List<HomeCard> defaultCards = [
-      HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
-      HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
-      HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
-      HomeCard(id: 'family_groups', title: 'Aile Grupları', icon: _iconMap['family_groups']!),
-      HomeCard(id: 'spirit_level', title: 'Su Terazisi', icon: _iconMap['spirit_level']!),
-      HomeCard(id: 'compass', title: 'Pusula', icon: _iconMap['compass']!),
-      HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
-      HomeCard(id: 'assembly_areas', title: 'Toplanma Alanları', icon: _iconMap['assembly_areas']!),
-      HomeCard(id: 'voice_assistant', title: 'Sesli Asistan', icon: _iconMap['voice_assistant']!),
-      HomeCard(id: 'news', title: 'Haberler', icon: _iconMap['news']!),
       HomeCard(id: 'emergency_numbers', title: 'Acil Numaralar', icon: _iconMap['emergency_numbers']!),
+      HomeCard(id: 'assembly_areas', title: 'Toplanma Alanları', icon: _iconMap['assembly_areas']!),
+      HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
       HomeCard(id: 'quick_guides', title: 'Hızlı Rehberler', icon: _iconMap['quick_guides']!),
       HomeCard(id: 'donate', title: 'Bağış Yap', icon: _iconMap['donate']!),
       HomeCard(id: 'weather', title: 'Hava Durumu', icon: _iconMap['weather']!),
+      HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
+      HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
+      HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
+      HomeCard(id: 'compass', title: 'Pusula', icon: _iconMap['compass']!),
+      HomeCard(id: 'spirit_level', title: 'Su Terazisi', icon: _iconMap['spirit_level']!),
     ];
 
     if (order != null) {
@@ -114,21 +89,15 @@ class _HomeScreenState extends State<HomeScreen> {
           orderedCards.add(card);
         }
       }
-      setState(() {
-        _cards = orderedCards;
-      });
+      setState(() { _cards = orderedCards; });
     } else {
-      setState(() {
-        _cards = defaultCards;
-      });
+      setState(() { _cards = defaultCards; });
     }
   }
 
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
+      if (newIndex > oldIndex) newIndex -= 1;
       final item = _cards.removeAt(oldIndex);
       _cards.insert(newIndex, item);
       _storageService.saveCardOrder(_cards.map((e) => e.id).toList());
@@ -137,22 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCardWidget(HomeCard card) {
     switch (card.id) {
-      case 'quick_tools':
-        return QuickToolsWidget(key: ValueKey(card.id));
-      case 'status_report':
-        return StatusReportWidget(key: ValueKey(card.id));
-      case 'last_quake':
-        return LastQuakeWidget(key: ValueKey(card.id));
-      case 'spirit_level':
-        return SpiritLevelWidget(key: ValueKey(card.id));
-      case 'compass':
-        return CompassWidget(key: ValueKey(card.id));
-      case 'daily_tip':
-        return DailyTipWidget(key: ValueKey(card.id));
-      case 'assembly_areas':
-        return AssemblyAreaWidget(key: ValueKey(card.id));
-      default:
-        return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
+      case 'quick_tools': return QuickToolsWidget(key: ValueKey(card.id));
+      case 'status_report': return StatusReportWidget(key: ValueKey(card.id));
+      case 'last_quake': return LastQuakeWidget(key: ValueKey(card.id));
+      case 'spirit_level': return SpiritLevelWidget(key: ValueKey(card.id));
+      case 'compass': return CompassWidget(key: ValueKey(card.id));
+      case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
+      case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
+      default: return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
     }
   }
 
@@ -162,30 +123,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(AppTranslations.t('app_name', settings.language), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("QuakeSafe", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 32, letterSpacing: -1)),
         backgroundColor: Colors.black,
-        centerTitle: true,
+        elevation: 0,
         actions: [
-          IconButton(
-            icon: Icon(_isEditMode ? Icons.check : Icons.edit, color: Colors.purple),
-            onPressed: () => setState(() => _isEditMode = !_isEditMode),
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.purple),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
-            },
-          ),
+          IconButton(icon: const Icon(Icons.edit_outlined, color: Colors.white38), onPressed: () => setState(() => _isEditMode = !_isEditMode)),
+          IconButton(icon: const Icon(Icons.notifications_none_outlined, color: Colors.white), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()))),
         ],
       ),
       body: _isEditMode
           ? ReorderableListView(
-              padding: const EdgeInsets.only(bottom: 20, top: 10),
+              padding: const EdgeInsets.only(bottom: 20),
               onReorder: _onReorder,
               children: _cards.map((card) => _buildEditCard(card)).toList(),
             )
           : ListView(
-              padding: const EdgeInsets.only(bottom: 20, top: 10),
+              padding: const EdgeInsets.only(bottom: 20),
               children: _cards.map((card) => _buildCardWidget(card)).toList(),
             ),
     );
@@ -195,12 +148,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Card(
       key: ValueKey("edit_${card.id}"),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white.withOpacity(0.05),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.white.withOpacity(0.1))),
+      color: const Color(0xFF161616),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
         leading: Icon(card.icon, color: Colors.purple),
-        title: Text(card.title, style: const TextStyle(color: Colors.white)),
-        trailing: const Icon(Icons.drag_handle, color: Colors.grey),
+        title: Text(card.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        trailing: const Icon(Icons.drag_handle, color: Colors.white12),
       ),
     );
   }

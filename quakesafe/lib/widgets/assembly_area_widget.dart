@@ -4,41 +4,25 @@ import 'package:url_launcher/url_launcher.dart';
 class AssemblyAreaWidget extends StatelessWidget {
   const AssemblyAreaWidget({super.key});
 
-  final String _url = 'https://www.turkiye.gov.tr/afet-ve-acil-durum-yonetimi-acil-toplanma-alani-sorgulama';
-
-  Future<void> _launchUrl() async {
-    if (!await launchUrl(Uri.parse(_url))) {
-      throw Exception('Could not launch $_url');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: InkWell(
-        onTap: _launchUrl,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.blue[900]?.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.map, color: Colors.white),
-              SizedBox(width: 15),
-              Expanded(
-                child: Text(
-                  "Toplanma Alanlarını Sorgula",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Icon(Icons.open_in_new, size: 18),
-            ],
-          ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121212),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+      ),
+      child: ListTile(
+        onTap: () => launchUrl(Uri.parse("https://www.turkiye.gov.tr/afet-ve-acil-durum-yonetimi-acil-toplanma-alani-sorgulama")),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), shape: BoxShape.circle),
+          child: const Icon(Icons.location_on, color: Colors.white, size: 20),
         ),
+        title: const Text("Toplanma Alanı Sorgula", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        subtitle: const Text("e-Devlet", style: TextStyle(color: Colors.white24, fontSize: 11)),
+        trailing: const Icon(Icons.chevron_right, color: Colors.white24),
       ),
     );
   }

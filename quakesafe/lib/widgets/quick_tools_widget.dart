@@ -88,8 +88,8 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text("Hızlı Araçlar", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+          child: Text("HIZLI ARAÇLAR", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white54, letterSpacing: 1.2)),
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -97,45 +97,31 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
           child: Row(
             children: [
               _buildToolButton(
-                icon: _isFlashOn ? Icons.flashlight_on : Icons.flashlight_off,
-                label: "El Feneri",
+                icon: Icons.campaign,
+                label: "SİREN",
+                onTap: () => _playSound("siren", "sounds/siren.mp3"),
+                active: _currentlyPlaying == "siren",
+              ),
+              const SizedBox(width: 12),
+              _buildToolButton(
+                icon: Icons.flashlight_on,
+                label: "FENER",
                 onTap: _toggleFlash,
                 active: _isFlashOn,
               ),
               const SizedBox(width: 12),
               _buildToolButton(
-                icon: Icons.emergency,
-                label: "SOS Flash",
+                icon: Icons.flash_on,
+                label: "ÇAKAR",
                 onTap: _toggleSos,
                 active: _isSosActive,
               ),
               const SizedBox(width: 12),
               _buildToolButton(
                 icon: Icons.record_voice_over,
-                label: "Düdük",
+                label: "DÜDÜK",
                 onTap: () => _playSound("whistle", "sounds/whistle.mp3"),
                 active: _currentlyPlaying == "whistle",
-              ),
-              const SizedBox(width: 12),
-              _buildToolButton(
-                icon: Icons.warning_rounded,
-                label: "Siren",
-                onTap: () => _playSound("siren", "sounds/siren.mp3"),
-                active: _currentlyPlaying == "siren",
-              ),
-              const SizedBox(width: 12),
-              _buildToolButton(
-                icon: Icons.pets,
-                label: "Köpek",
-                onTap: () => _playSound("dog", "sounds/dog.mp3"),
-                active: _currentlyPlaying == "dog",
-              ),
-              const SizedBox(width: 12),
-              _buildToolButton(
-                icon: Icons.campaign,
-                label: "Tiz Ses",
-                onTap: () => _playSound("high", "sounds/whistle.mp3"), // Placeholder
-                active: _currentlyPlaying == "high",
               ),
             ],
           ),
@@ -152,21 +138,22 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 75,
-            height: 75,
-            decoration: BoxDecoration(
-              color: active ? Colors.purple : const Color(0xFF1E1E1E),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: active ? Colors.white.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05)),
-            ),
-            child: Icon(icon, color: Colors.white, size: 30),
-          ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.white)),
-        ],
+      child: Container(
+        width: 110,
+        height: 110,
+        decoration: BoxDecoration(
+          color: active ? Colors.purple.withValues(alpha: 0.2) : const Color(0xFF161616),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: active ? Colors.purple : Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: active ? Colors.purple : Colors.white38, size: 28),
+            const SizedBox(height: 12),
+            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: active ? Colors.white : Colors.white24, letterSpacing: 1)),
+          ],
+        ),
       ),
     );
   }

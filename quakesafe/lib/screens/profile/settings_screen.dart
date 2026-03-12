@@ -61,6 +61,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (key == 'animations') settings.setAnimations(value);
     if (key == 'font_size') settings.setFontSize(value);
     if (key == 'language') settings.setLanguage(value);
+    if (key == 'block_foreign') settings.setBlockForeign(value);
+    if (key == 'block_vpn') settings.setBlockVpn(value);
 
     if (key == 'block_foreign' || key == 'block_vpn') {
       final dbKey = key == 'block_foreign' ? 'block_foreign_access' : 'block_vpn';

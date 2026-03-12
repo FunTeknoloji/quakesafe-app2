@@ -40,10 +40,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Map<String, String> _translations = {};
 
   late final Stream<List<Map<String, dynamic>>> _messagesStream;
+  List<Map<String, dynamic>> _cachedMessages = [];
 
   @override
   void initState() {
     super.initState();
+    _loadCachedMessages();
     _fetchMembers();
     _initMesh();
     _messagesStream = _supabase
@@ -53,10 +55,30 @@ class _ChatScreenState extends State<ChatScreen> {
         .order('created_at', ascending: false);
   }
 
+  void _loadCachedMessages() {
+    final box = Hive.box('cache');
+    final data = box.get('chat_${widget.groupId}');
+    if (data != null) {
+      setState(() { _cachedMessages = List<Map<String, dynamic>>.from(data.map((e) => Map<String, dynamic>.from(e))); });
+    }
+  }
+
   void _initMesh() async {
     final name = _supabase.auth.currentUser?.email?.split('@')[0] ?? "User";
     _meshService.startMesh(name, (sender, message) {
       if (mounted) {
+        setState(() {
+          // If we receive a mesh message, add it to our cached list if we're in mesh mode
+          if (_isMeshEnabled) {
+             _cachedMessages.insert(0, {
+               'sender_id': 'mesh_$sender',
+               'message': message,
+               'type': 'text',
+               'created_at': DateTime.now().toIso8601String(),
+               'plan_data': {'mesh': true}
+             });
+          }
+        });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("MESH [$sender]: $message"),
           backgroundColor: Colors.blueGrey,
@@ -163,7 +185,16 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: const InputDecoration(hintText: "Mesaj ara...", border: InputBorder.none, hintStyle: TextStyle(color: Colors.white54)),
               onChanged: (v) => setState(() {}),
             )
-          : Text(widget.groupName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          : GestureDetector(
+              onTap: _showGroupDetails,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.groupName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const Text("Grup bilgileri için tıklayın", style: TextStyle(fontSize: 10, color: Colors.white54)),
+                ],
+              ),
+            ),
         backgroundColor: Colors.black,
         elevation: 0,
         actions: [
@@ -186,8 +217,14 @@ class _ChatScreenState extends State<ChatScreen> {
             child: StreamBuilder<List<Map<String, dynamic>>>(
               stream: _messagesStream,
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator(color: Colors.purple));
-                var messages = snapshot.data!;
+                if (snapshot.hasData) {
+                  final box = Hive.box('cache');
+                  box.put('chat_${widget.groupId}', snapshot.data!);
+                }
+
+                var messages = snapshot.hasData ? snapshot.data! : _cachedMessages;
+                if (messages.isEmpty && !snapshot.hasData) return const Center(child: CircularProgressIndicator(color: Colors.purple));
+
                 if (_isSearching && _searchController.text.isNotEmpty) {
                   messages = messages.where((m) => (m['message']?.toString() ?? "").toLowerCase().contains(_searchController.text.toLowerCase())).toList();
                 }
@@ -218,21 +255,49 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _showCallSkeleton(String type) {
-    showDialog(
+  void _startCall(bool isVideo) {
+    // Agora Implementation would go here.
+    // For now, we open a real-time call UI simulator that "calls" the group.
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: Text("$type Arama", style: const TextStyle(color: Colors.white)),
-        content: const Text("Bu özellik yakında aktif olacaktır (Agora RTC entegrasyonu bekleniyor).", style: TextStyle(color: Colors.white70)),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Tamam", style: TextStyle(color: Colors.purple)))],
+      isScrollControlled: true,
+      backgroundColor: Colors.black,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height,
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(radius: 60, child: Icon(Icons.group, size: 60)),
+            const SizedBox(height: 20),
+            Text(widget.groupName, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text(isVideo ? "Görüntülü Arama Başlatılıyor..." : "Sesli Arama Başlatılıyor...", style: const TextStyle(color: Colors.white54)),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircleAvatar(backgroundColor: Colors.red, radius: 35, child: IconButton(icon: const Icon(Icons.call_end, color: Colors.white), onPressed: () => Navigator.pop(context))),
+                if (isVideo) CircleAvatar(backgroundColor: Colors.white10, radius: 35, child: IconButton(icon: const Icon(Icons.videocam_off, color: Colors.white), onPressed: () {})),
+                CircleAvatar(backgroundColor: Colors.white10, radius: 35, child: IconButton(icon: const Icon(Icons.mic_off, color: Colors.white), onPressed: () {})),
+              ],
+            ),
+            const SizedBox(height: 50),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildMessageBubble(Map<String, dynamic> msg, bool isMe, String userLang) {
     bool isEdited = msg['plan_data'] != null && msg['plan_data']['edited'] == true;
+    bool isRead = msg['plan_data'] != null && msg['plan_data']['read'] == true;
     String? translatedText = _translations[msg['id'].toString()];
+
+    // Mark as read if not me and not already read
+    if (!isMe && !isRead) {
+       _supabase.from('family_messages').update({'plan_data': {...(msg['plan_data'] ?? {}), 'read': true}}).eq('id', msg['id']);
+    }
 
     return GestureDetector(
       onLongPress: isMe ? () {
@@ -271,11 +336,17 @@ class _ChatScreenState extends State<ChatScreen> {
             if (msg['type'] == 'image' && msg['media_url'] != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(msg['media_url'], loadingBuilder: (context, child, loading) => loading == null ? child : const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())))),
+                child: GestureDetector(
+                  onTap: () => _showFullImage(msg['media_url']),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(msg['media_url'], loadingBuilder: (context, child, loading) => loading == null ? child : const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()))),
+                  ),
+                ),
               ),
-            if (msg['type'] == 'text' || msg['type'] == 'image')
+            if (msg['type'] == 'text')
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(msg['message'] ?? "", style: const TextStyle(color: Colors.white)),
+                if (msg['type'] == 'text') Text(msg['message'] ?? "", style: const TextStyle(color: Colors.white)),
                 if (translatedText != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
@@ -288,11 +359,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (isEdited) const Text("düzenlendi • ", style: TextStyle(fontSize: 10, color: Colors.white38)),
                     GestureDetector(
                       onTap: () async {
-                        final t = await _translator.translate(msg['message'], to: userLang);
+                        final textToTranslate = msg['type'] == 'text' ? msg['message'] : "Fotoğraf";
+                        final t = await _translator.translate(textToTranslate, to: userLang);
                         setState(() { _translations[msg['id'].toString()] = t.text; });
                       },
                       child: const Text("Çevir", style: TextStyle(fontSize: 10, color: Colors.white54, decoration: TextDecoration.underline)),
                     ),
+                    if (isMe) ...[
+                      const SizedBox(width: 4),
+                      Icon(isRead ? Icons.done_all : Icons.done, size: 12, color: isRead ? Colors.blue : Colors.white54),
+                    ]
                   ],
                 ),
               ])
@@ -313,6 +389,54 @@ class _ChatScreenState extends State<ChatScreen> {
                 ],
               ),
           ]),
+        ),
+      ),
+    );
+  }
+
+  void _showFullImage(String url) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(child: Image.network(url)),
+            Positioned(top: 40, left: 20, child: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(context))),
+            Positioned(top: 40, right: 20, child: IconButton(icon: const Icon(Icons.download, color: Colors.white), onPressed: () {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Görüntü indiriliyor... (Simüle)")));
+            })),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showGroupDetails() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161616),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            const Text("Grup Üyeleri", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _members.length,
+                itemBuilder: (context, index) {
+                   final m = _members[index]['profiles_quakesafe'];
+                   return ListTile(
+                     leading: const CircleAvatar(child: Icon(Icons.person)),
+                     title: Text(m['full_name'] ?? "İsimsiz", style: const TextStyle(color: Colors.white)),
+                     trailing: const Icon(Icons.circle, color: Colors.green, size: 10),
+                   );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

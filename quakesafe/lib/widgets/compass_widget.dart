@@ -16,7 +16,7 @@ class _CompassWidgetState extends State<CompassWidget> {
   @override
   void initState() {
     super.initState();
-    magnetometerEvents.listen(
+    magnetometerEventStream().listen(
       (MagnetometerEvent event) {
         if (mounted) {
           setState(() {
@@ -30,33 +30,50 @@ class _CompassWidgetState extends State<CompassWidget> {
           _hasSensor = false;
         });
       },
+      cancelOnError: false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text("Pusula", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            if (!_hasSensor)
-              const Text("Cihazınızda manyetometre sensörü bulunamadı.", style: TextStyle(color: Colors.red))
-            else
-              Center(
-                child: Transform.rotate(
-                  angle: ((_direction ?? 0) * (math.pi / 180) * -1),
-                  child: const Icon(Icons.explore, size: 150, color: Colors.purple),
-                ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D0D0D),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        children: [
+          if (!_hasSensor)
+            const Center(
+              child: Text(
+                "CİHAZINIZDA PUSULA DESTEĞİ BULUNAMADI.",
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
+                textAlign: TextAlign.center,
               ),
-            const SizedBox(height: 10),
-            if (_hasSensor)
-              Text("${_direction.toStringAsFixed(0)}°", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ],
-        ),
+            )
+          else
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Pusula", style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+                    Text("${_direction.toStringAsFixed(0)}°", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: Transform.rotate(
+                    angle: ((_direction ?? 0) * (math.pi / 180) * -1),
+                    child: const Icon(Icons.explore, size: 80, color: Colors.purple),
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }

@@ -65,7 +65,15 @@ class _EmergencyCallScreenState extends State<EmergencyCallScreen> {
     String locationStr = "https://maps.google.com/?q=${pos.latitude},${pos.longitude}";
     String finalMsg = _customMessage.replaceAll(">konum<", locationStr);
 
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Mesaj kişilere iletildi (Simüle edildi):\n$finalMsg")));
+    for (var contact in _contacts) {
+      final String number = contact['phone']!;
+      // Note: Real SMS sending requires platform channel or specific package like 'flutter_sms'
+      // but 'url_launcher' can open the native SMS app with body.
+      final Uri smsUri = Uri.parse("sms:$number?body=${Uri.encodeComponent(finalMsg)}");
+      if (await canLaunchUrl(smsUri)) {
+        await launchUrl(smsUri);
+      }
+    }
   }
 
   @override

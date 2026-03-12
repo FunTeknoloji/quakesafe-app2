@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hive/hive.dart';
 import 'chat_screen.dart';
+import 'mesh_network_screen.dart';
 import 'dart:math';
 
 class FamilyScreen extends StatefulWidget {
@@ -24,7 +26,14 @@ class _FamilyScreenState extends State<FamilyScreen> {
 
   Future<void> _fetchGroups() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+
+    // Load from cache first
+    final box = Hive.box('cache');
+    final cached = box.get('family_groups');
+    if (cached != null) {
+       setState(() { _groups = List<dynamic>.from(cached); _isLoading = false; });
+    }
+
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return;
@@ -37,6 +46,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
         _groups = response;
         _isLoading = false;
       });
+      box.put('family_groups', response);
     } catch (e) {
       debugPrint("Error: $e");
       setState(() => _isLoading = false);
@@ -158,7 +168,14 @@ class _FamilyScreenState extends State<FamilyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text("Ailem"), backgroundColor: Colors.black, actions: [IconButton(onPressed: _fetchGroups, icon: const Icon(Icons.refresh, color: Colors.purple))]),
+      appBar: AppBar(
+        title: const Text("Ailem"),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MeshNetworkScreen())), icon: const Icon(Icons.wifi_tethering, color: Colors.purple)),
+          IconButton(onPressed: _fetchGroups, icon: const Icon(Icons.refresh, color: Colors.purple))
+        ]
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : Column(

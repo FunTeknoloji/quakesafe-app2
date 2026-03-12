@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'settings_screen.dart';
 import 'profile_edit_screen.dart';
 import '../../services/auth_service.dart';
@@ -73,10 +76,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildInfoGrid(),
                     _buildLongInfoSection("Alerjiler", _profile?['allergies'], Icons.warning_amber_rounded, Colors.orange),
                     _buildLongInfoSection("Kullanılan İlaçlar", _profile?['medications'], Icons.medication_outlined, Colors.blue),
-                    const SizedBox(height: 30),
-                    const Text("QuakeSafe Premium Üyesi", style: TextStyle(color: Colors.purple, fontSize: 12, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-                    Text("Üyelik Tarihi: ${DateTime.now().year} Ocak", style: const TextStyle(color: Colors.white24, fontSize: 10)),
                     const SizedBox(height: 50),
                   ],
                 ),
@@ -179,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(color: Colors.purple, borderRadius: BorderRadius.circular(15)),
                 child: IconButton(
                   icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-                  onPressed: () {},
+                  onPressed: _showQRCode,
                 ),
               ),
             ],
@@ -241,6 +240,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(label, style: const TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  void _showQRCode() {
+    final String shareUrl = "https://quakesafe.funteknoloji.com/profile/share/${_supabase.auth.currentUser!.id}";
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161616),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("ACİL DURUM KARTI", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+              child: QrImageView(data: shareUrl, size: 200, version: QrVersions.auto),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _qrAction(Icons.copy, "Kopyala", () {
+                  Clipboard.setData(ClipboardData(text: shareUrl));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Link kopyalandı!")));
+                }),
+                _qrAction(Icons.share, "Paylaş", () => Share.share("Acil Durum Bilgilerim: $shareUrl")),
+                _qrAction(Icons.download, "İndir", () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("QR Kod kaydedildi!")))),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _qrAction(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          CircleAvatar(backgroundColor: Colors.white10, child: Icon(icon, color: Colors.purple, size: 20)),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10)),
         ],
       ),
     );

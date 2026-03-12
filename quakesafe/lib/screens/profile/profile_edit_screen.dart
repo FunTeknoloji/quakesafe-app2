@@ -36,18 +36,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.profile['full_name']);
-    _phoneController = TextEditingController(text: widget.profile['phone']);
-    _allergiesController = TextEditingController(text: widget.profile['allergies']);
-    _medsController = TextEditingController(text: widget.profile['medications']);
+    _nameController = TextEditingController(text: widget.profile['full_name']?.toString() ?? "");
+    _phoneController = TextEditingController(text: widget.profile['phone']?.toString() ?? "");
+    _allergiesController = TextEditingController(text: widget.profile['allergies']?.toString() ?? "");
+    _medsController = TextEditingController(text: widget.profile['medications']?.toString() ?? "");
 
-    _selectedCity = widget.profile['city'];
-    _selectedBloodType = widget.profile['blood_type'];
-    _selectedGender = widget.profile['gender'];
+    _selectedCity = widget.profile['city']?.toString();
+    _selectedBloodType = widget.profile['blood_type']?.toString();
+    _selectedGender = widget.profile['gender']?.toString();
     _selectedHeight = widget.profile['height'] != null ? int.tryParse(widget.profile['height'].toString()) : null;
     _selectedWeight = widget.profile['weight'] != null ? int.tryParse(widget.profile['weight'].toString()) : null;
     if (widget.profile['birth_date'] != null) {
-      _selectedBirthDate = DateTime.tryParse(widget.profile['birth_date']);
+      _selectedBirthDate = DateTime.tryParse(widget.profile['birth_date'].toString());
     }
   }
 

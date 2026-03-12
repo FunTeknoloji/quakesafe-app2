@@ -49,44 +49,70 @@ class StatusReportWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsProvider>(context);
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D0D0D),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppTranslations.t('status_report', settings.language), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
-          const SizedBox(height: 12),
+          const Text("Durumunuz", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text("AİLENİZE GÜVENDE OLDUĞUNUZU BİLDİRİN", style: TextStyle(fontSize: 10, color: Colors.white24, letterSpacing: 1, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 30),
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => reportStatus(context, true),
-                  icon: const Icon(Icons.check_circle, color: Colors.white),
-                  label: Text(AppTranslations.t('safe', settings.language), style: const TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[900],
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
+                child: _statusBtn(
+                  context,
+                  true,
+                  "GÜVENDEYİM",
+                  Icons.verified_user_outlined,
+                  Colors.green,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => reportStatus(context, false),
-                  icon: const Icon(Icons.warning, color: Colors.white),
-                  label: Text(AppTranslations.t('help', settings.language), style: const TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[900],
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
+                child: _statusBtn(
+                  context,
+                  false,
+                  "YARDIM LAZIM",
+                  Icons.report_problem_outlined,
+                  Colors.red,
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _statusBtn(BuildContext context, bool isSafe, String label, IconData icon, Color color) {
+    return GestureDetector(
+      onTap: () => reportStatus(context, isSafe),
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: const Color(0xFF161616),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+          ],
+        ),
       ),
     );
   }

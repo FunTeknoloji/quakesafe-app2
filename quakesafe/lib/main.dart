@@ -7,6 +7,7 @@ import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/earthquakes/earthquakes_screen.dart';
 import 'screens/family/family_screen.dart';
+import 'screens/family/chat_screen.dart';
 import 'screens/other_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/intro/intro_screen.dart';
@@ -91,13 +92,19 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    EarthquakesScreen(),
-    FamilyScreen(),
-    OtherScreen(),
-    ProfileScreen(),
-  ];
+  late final List<Widget> _widgetOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      const HomeScreen(),
+      const EarthquakesScreen(),
+      const FamilyScreen(),
+      const OtherScreen(),
+      const ProfileScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
