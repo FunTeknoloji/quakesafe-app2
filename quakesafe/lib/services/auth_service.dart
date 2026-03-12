@@ -3,6 +3,7 @@ import 'package:safe_device/safe_device.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -51,6 +52,24 @@ class AuthService {
         throw "Giriş başarısız: E-posta veya şifre hatalı.";
       }
       rethrow;
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        // Supabase doesn't allow users to delete themselves directly via GoTrue without admin rights usually
+        // But we can trigger a function or at least sign out and clear local data.
+        // For a real app, you'd use a Supabase Edge Function.
+        await _supabase.from('profiles_quakesafe').delete().eq('id', user.id);
+        await _supabase.auth.signOut();
+        await _storage.deleteAll();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+      }
+    } catch (e) {
+      throw "Hesap silinemedi: $e";
     }
   }
 
