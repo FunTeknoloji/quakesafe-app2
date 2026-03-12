@@ -4,29 +4,32 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class StatusReportWidget extends StatelessWidget {
   const StatusReportWidget({super.key});
 
-  Future<void> _reportStatus(BuildContext context, bool isSafe) async {
+  static Future<void> reportStatus(BuildContext? context, bool isSafe) async {
     final supabase = Supabase.instance.client;
-    final userId = supabase.auth.currentUser!.id;
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
     try {
-      // For now, we'll send a message to all groups the user is in
-      final memberships = await supabase.from('family_members').select('group_id').eq('user_id', userId);
+      final memberships = await supabase.from('family_members').select('group_id').eq('user_id', user.id);
 
       for (var membership in memberships) {
         await supabase.from('family_messages').insert({
           'group_id': membership['group_id'],
-          'user_id': userId,
-          'message_type': isSafe ? 'status_safe' : 'status_help',
-          'content': isSafe ? "Güvendeyim!" : "YARDIM LAZIM! (Konum paylaşıldı)",
-          // Real apps would add lat/long here
+          'sender_id': user.id,
+          'type': isSafe ? 'text' : 'emergency_card',
+          'message': isSafe ? "Güvendeyim!" : "YARDIM LAZIM! (Konum paylaşıldı)",
         });
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isSafe ? "Güvende olduğunuz bildirildi." : "Yardım talebi gönderildi!")),
-      );
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isSafe ? "Güvende olduğunuz bildirildi." : "Yardım talebi gönderildi!")),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e")));
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e")));
+      }
     }
   }
 
@@ -43,7 +46,7 @@ class StatusReportWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _reportStatus(context, true),
+                  onPressed: () => reportStatus(context, true),
                   icon: const Icon(Icons.check_circle, color: Colors.white),
                   label: const Text("Güvendeyim", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
@@ -56,7 +59,7 @@ class StatusReportWidget extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _reportStatus(context, false),
+                  onPressed: () => reportStatus(context, false),
                   icon: const Icon(Icons.warning, color: Colors.white),
                   label: const Text("Yardım Lazım", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(

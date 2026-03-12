@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:home_widget/home_widget.dart';
 import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -9,8 +10,19 @@ import 'screens/family/family_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/other_screen.dart';
 
+@pragma('vm:entry-point')
+Future<void> _backgroundCallback(Uri? uri) async {
+  if (uri?.host == 'status') {
+    final type = uri?.queryParameters['type'];
+    // Trigger reporting via Supabase directly in background if possible
+    // Note: This requires Supabase to be initialized in the background isolate too
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  HomeWidget.registerInteractivityCallback(_backgroundCallback);
 
   await Supabase.initialize(
     url: 'https://kiekqhznukzjjqcyzxfv.supabase.co',
