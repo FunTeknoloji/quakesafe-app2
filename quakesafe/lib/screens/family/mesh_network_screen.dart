@@ -56,7 +56,8 @@ class _MeshNetworkScreenState extends State<MeshNetworkScreen> {
     if (await _audioRecorder.hasPermission()) {
       setState(() { _isTalking = true; });
       final dir = Directory.systemTemp;
-      await _audioRecorder.start(const RecordConfig(encoder: AudioEncoder.aacLow), path: '${dir.path}/ptt.m4a');
+      // Note: encoder: AudioEncoder.aacLow might not be available in all versions of 'record', using default
+      await _audioRecorder.start(const RecordConfig(), path: '${dir.path}/ptt.m4a');
     }
   }
 

@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../services/storage_service.dart';
 import '../../services/settings_provider.dart';
 import '../../services/mesh_service.dart';
+import 'package:hive/hive.dart';
 import 'dart:io';
 
 class ChatScreen extends StatefulWidget {
@@ -207,8 +208,8 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: _toggleMesh,
             tooltip: "Mesh (Çevrimdışı) Modu",
           ),
-          IconButton(icon: const Icon(Icons.phone, color: Colors.white), onPressed: () => _showCallSkeleton("Sesli")),
-          IconButton(icon: const Icon(Icons.videocam, color: Colors.white), onPressed: () => _showCallSkeleton("Görüntülü")),
+          IconButton(icon: const Icon(Icons.phone, color: Colors.white), onPressed: () => _startCall(false)),
+          IconButton(icon: const Icon(Icons.videocam, color: Colors.white), onPressed: () => _startCall(true)),
         ],
       ),
       body: Column(
