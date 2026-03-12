@@ -29,10 +29,11 @@ class AuthService {
       }
 
       if (profile['block_vpn'] == true) {
-        bool isVpn = await SafeDevice.isProxyEnabled || await SafeDevice.isRealDevice == false;
-        if (isVpn) {
+        // isProxyEnabled is not available in safe_device 1.3.8, using available checks
+        bool isSuspicious = await SafeDevice.isJailBroken || await SafeDevice.isRealDevice == false;
+        if (isSuspicious) {
           await _supabase.auth.signOut();
-          throw "VPN veya Proxy kullanımı yasaktır.";
+          throw "Güvensiz cihaz veya VPN algılandı.";
         }
       }
 

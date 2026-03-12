@@ -1,5 +1,6 @@
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 
 class MeshService {
   static final MeshService _instance = MeshService._internal();
@@ -43,12 +44,14 @@ class MeshService {
 
   void _onConnectionInitiated(String id, ConnectionInfo info) {
     endpointMap[id] = info;
-    Nearby().acceptConnection(id, onPayloadReceived: (endpointId, payload) {
+    Nearby().acceptConnection(id, onPayLoadRecieved: (endpointId, payload) {
        if (payload.type == PayloadType.BYTES) {
           String msg = String.fromCharCodes(payload.bytes!);
           String senderName = endpointMap[endpointId]?.endpointName ?? "Bilinmeyen";
           globalMessageHandler?.call(senderName, msg);
        }
+    }, onPayloadTransferUpdate: (endpointId, update) {
+       // Status updates (optional but good for stability)
     });
   }
 
