@@ -64,18 +64,21 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
   }
 
   Future<void> _playSound(String soundName, String assetPath) async {
-    if (_currentlyPlaying == soundName) {
-      await _audioPlayer.stop();
-      setState(() {
-        _currentlyPlaying = null;
-      });
-    } else {
-      await _audioPlayer.stop();
-      // Use Source instead of AssetSource for dummy testing if needed, but AssetSource is correct for real assets
-      await _audioPlayer.play(AssetSource(assetPath));
-      setState(() {
-        _currentlyPlaying = soundName;
-      });
+    try {
+      if (_currentlyPlaying == soundName) {
+        await _audioPlayer.stop();
+        setState(() {
+          _currentlyPlaying = null;
+        });
+      } else {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(AssetSource(assetPath));
+        setState(() {
+          _currentlyPlaying = soundName;
+        });
+      }
+    } catch (e) {
+      debugPrint("Audio play error: $e");
     }
   }
 
@@ -115,7 +118,7 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
               ),
               const SizedBox(width: 12),
               _buildToolButton(
-                icon: Icons.warning,
+                icon: Icons.warning_rounded,
                 label: "Siren",
                 onTap: () => _playSound("siren", "sounds/siren.mp3"),
                 active: _currentlyPlaying == "siren",
@@ -126,6 +129,13 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
                 label: "Köpek",
                 onTap: () => _playSound("dog", "sounds/dog.mp3"),
                 active: _currentlyPlaying == "dog",
+              ),
+              const SizedBox(width: 12),
+              _buildToolButton(
+                icon: Icons.campaign,
+                label: "Tiz Ses",
+                onTap: () => _playSound("high", "sounds/whistle.mp3"), // Placeholder
+                active: _currentlyPlaying == "high",
               ),
             ],
           ),
@@ -145,17 +155,17 @@ class _QuickToolsWidgetState extends State<QuickToolsWidget> {
       child: Column(
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 75,
+            height: 75,
             decoration: BoxDecoration(
-              color: active ? Colors.purple : Colors.grey[900],
+              color: active ? Colors.purple : const Color(0xFF1E1E1E),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: active ? Colors.white : Colors.white.withOpacity(0.1)),
+              border: Border.all(color: active ? Colors.white.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05)),
             ),
             child: Icon(icon, color: Colors.white, size: 30),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.white)),
         ],
       ),
     );

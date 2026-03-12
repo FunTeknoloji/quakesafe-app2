@@ -44,6 +44,21 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Lütfen e-posta adresinizi girin.")));
+      return;
+    }
+    try {
+      await _authService.resetPassword(_emailController.text);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Şifre sıfırlama e-postası gönderildi!")));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Image.asset('assets/images/logo.png', width: 120).animate().scale(duration: 500.ms),
             const SizedBox(height: 20),
-            const Text("QuakeSafe'e Hoş Geldiniz",
+            const Text("QuakeSafe",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 10),
             const Text("Giriş yaparak güvenliğe adım atın", style: TextStyle(color: Colors.grey)),
@@ -76,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: _resetPassword,
                 child: const Text("Şifremi Unuttum", style: TextStyle(color: Colors.purple)),
               ),
             ),
@@ -109,28 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text("Kayıt Ol", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
                 ),
               ],
-            ),
-            const SizedBox(height: 20),
-            const Row(
-              children: [
-                Expanded(child: Divider()),
-                Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("VEYA", style: TextStyle(color: Colors.grey, fontSize: 12))),
-                Expanded(child: Divider()),
-              ],
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: OutlinedButton.icon(
-                onPressed: () => _authService.signInWithGoogle(),
-                icon: const Icon(Icons.login, color: Colors.white),
-                label: const Text("Google ile Giriş Yap", style: TextStyle(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-              ),
             ),
           ],
         ),

@@ -1,9 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../auth/login_screen.dart';
 
-class IntroScreen extends StatelessWidget {
+class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
+
+  @override
+  State<IntroScreen> createState() => _IntroScreenState();
+}
+
+class _IntroScreenState extends State<IntroScreen> {
+  bool _permissionsRequested = false;
+
+  Future<void> _requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.camera,
+      Permission.microphone,
+      Permission.location,
+      Permission.notification,
+      Permission.storage,
+    ].request();
+
+    setState(() {
+      _permissionsRequested = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +51,14 @@ class IntroScreen extends StatelessWidget {
                   ),
                 ).animate().slideY(begin: 1, end: 0, duration: 600.ms),
                 const SizedBox(height: 10),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Text(
-                    "Güvenliğiniz bizim önceliğimiz. Deprem anında ve sonrasında yanınızdayız.",
+                    _permissionsRequested
+                        ? "Hazırsınız! Giriş yaparak devam edebilirsiniz."
+                        : "Güvenliğiniz için konum, kamera ve mikrofon izinlerini onaylamanız gerekmektedir.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 ).animate().fadeIn(delay: 800.ms),
               ],
@@ -49,13 +73,20 @@ class IntroScreen extends StatelessWidget {
                 height: 55,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                    if (!_permissionsRequested) {
+                      _requestPermissions();
+                    } else {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   ),
-                  child: const Text("Başlayalım", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: Text(
+                    _permissionsRequested ? "Devam Et" : "İzinleri Onayla",
+                    style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)
+                  ),
                 ),
               ),
             ),

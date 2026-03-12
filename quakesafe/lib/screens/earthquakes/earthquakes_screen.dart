@@ -83,7 +83,7 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
             const SizedBox(height: 20),
             _detailRow(Icons.waves, "Büyüklük", "${quake['mag']}"),
             _detailRow(Icons.vertical_align_bottom, "Derinlik", "${quake['depth']} km"),
-            _detailRow(Icons.calendar_today, "Tarih", quake['date'] ?? "-"),
+            _detailRow(Icons.calendar_today, "Tarih", quake['date_time'] ?? "-"),
             _detailRow(Icons.location_on, "Koordinat", quake['geojson'] != null ? "${quake['geojson']['coordinates'][1]}, ${quake['geojson']['coordinates'][0]}" : "-"),
             const Spacer(),
             SizedBox(
@@ -163,7 +163,7 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
                         title: Text(quake['title'] ?? "Bilinmiyor", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
-                          child: Text(quake['date'] ?? "-", style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                          child: Text(quake['date_time'] ?? "-", style: TextStyle(color: Colors.grey[400], fontSize: 12)),
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white24),
                         onTap: () => _showDetails(quake),

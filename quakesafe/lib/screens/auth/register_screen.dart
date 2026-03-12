@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import '../../main.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -122,28 +120,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text("Zaten hesabınız var mı? Giriş Yapın", style: TextStyle(color: Colors.purple)),
-              ),
-            ),
-            const SizedBox(height: 30),
-            const Row(
-              children: [
-                Expanded(child: Divider()),
-                Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("VEYA", style: TextStyle(color: Colors.grey, fontSize: 12))),
-                Expanded(child: Divider()),
-              ],
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: OutlinedButton.icon(
-                onPressed: () => _authService.signInWithGoogle(),
-                icon: const Icon(Icons.login, color: Colors.white),
-                label: const Text("Google ile Kayıt Ol", style: TextStyle(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.white24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
               ),
             ),
           ],

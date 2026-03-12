@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:safe_device/safe_device.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -31,7 +30,7 @@ class AuthService {
 
       if (profile['block_vpn'] == true) {
         if (await SafeDevice.isJailBroken || await SafeDevice.isRealDevice == false) {
-           // SafeDevice doesn't have isProxyed in some versions, using jailbreak/realdevice as proxy
+          // Placeholder check
         }
       }
 
@@ -74,25 +73,11 @@ class AuthService {
     }
   }
 
-  Future<void> signInWithGoogle() async {
+  Future<void> resetPassword(String email) async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final googleUser = await googleSignIn.signIn();
-      final googleAuth = await googleUser?.authentication;
-      final accessToken = googleAuth?.accessToken;
-      final idToken = googleAuth?.idToken;
-
-      if (idToken == null) {
-        throw 'Google ile giriş başarısız: ID Token alınamadı.';
-      }
-
-      await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
-      );
+      await _supabase.auth.resetPasswordForEmail(email);
     } catch (e) {
-      throw "Google ile giriş sırasında bir hata oluştu: ${e.toString()}";
+      throw "Sıfırlama e-postası gönderilemedi: ${e.toString()}";
     }
   }
 

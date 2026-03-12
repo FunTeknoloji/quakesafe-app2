@@ -45,8 +45,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
 
   Future<void> _createGroup() async {
     final nameController = TextEditingController();
-    final locationController = TextEditingController();
-    final assemblyController = TextEditingController();
+    final cityController = TextEditingController();
+    final meetingPointController = TextEditingController();
 
     showDialog(
       context: context,
@@ -59,8 +59,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _dialogField(nameController, "Grup İsmi", Icons.group),
-              _dialogField(locationController, "Ev Konumu (Adres)", Icons.location_on),
-              _dialogField(assemblyController, "Toplanma Alanı", Icons.map),
+              _dialogField(cityController, "Şehir", Icons.location_city),
+              _dialogField(meetingPointController, "Toplanma Alanı (Açıklama)", Icons.map),
             ],
           ),
         ),
@@ -73,8 +73,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
                 final inviteCode = _generateInviteCode();
                 final group = await _supabase.from('family_groups').insert({
                   'name': nameController.text,
-                  'location': locationController.text,
-                  'assembly_area': assemblyController.text,
+                  'city': cityController.text,
+                  'meeting_point_text': meetingPointController.text,
                   'invite_code': inviteCode,
                 }).select().single();
 
@@ -149,7 +149,6 @@ class _FamilyScreenState extends State<FamilyScreen> {
           filled: true,
           fillColor: Colors.black.withValues(alpha: 0.2),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.purple, width: 1)),
         ),
       ),
     );
@@ -176,17 +175,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
                 ),
                 Expanded(
                   child: _groups.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.people_outline, size: 60, color: Colors.grey.withValues(alpha: 0.3)),
-                              const SizedBox(height: 15),
-                              const Text("Henüz bir grubunuz yok.", style: TextStyle(color: Colors.grey)),
-                              const Text("Hemen bir grup oluşturun veya katılın.", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                            ],
-                          ),
-                        )
+                      ? Center(child: Text("Henüz bir grubunuz yok.", style: TextStyle(color: Colors.grey)))
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: _groups.length,
@@ -204,13 +193,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
                                   child: const Icon(Icons.groups_rounded, color: Colors.purple),
                                 ),
                                 title: Text(group['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Text("Kod: ${group['invite_code']}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ],
-                                ),
+                                subtitle: Text("Kod: ${group['invite_code']}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 16),
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(groupId: group['id'].toString(), groupName: group['name'])));
@@ -230,12 +213,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
       onPressed: onTap,
       icon: Icon(icon, color: Colors.white, size: 22),
       label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        elevation: 0,
-      ),
+      style: ElevatedButton.styleFrom(backgroundColor: color, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0),
     );
   }
 }

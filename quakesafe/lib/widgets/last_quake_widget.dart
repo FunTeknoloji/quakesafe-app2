@@ -21,6 +21,7 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
   }
 
   Future<void> _fetchLastQuake() async {
+    if (!mounted) return;
     try {
       final response = await http.get(Uri.parse('https://api.orhanaydogdu.com.tr/deprem/kandilli/live?limit=1'));
       if (response.statusCode == 200) {
@@ -34,7 +35,7 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
       }
     } catch (e) {
       debugPrint('Error fetching quake: $e');
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -43,9 +44,9 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -76,7 +77,7 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _getMagColor(double.tryParse(_lastQuake!['mag'].toString()) ?? 0).withOpacity(0.2),
+                      color: _getMagColor(double.tryParse(_lastQuake!['mag'].toString()) ?? 0).withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -89,8 +90,8 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_lastQuake!['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-                        Text(_lastQuake!['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(_lastQuake!['title'] ?? "Bilinmiyor", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text(_lastQuake!['date_time'] ?? "-", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -103,8 +104,8 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
   }
 
   Color _getMagColor(double mag) {
-    if (mag < 3.0) return Colors.green;
-    if (mag < 5.0) return Colors.orange;
-    return Colors.red;
+    if (mag < 3.0) return Colors.greenAccent;
+    if (mag < 5.0) return Colors.orangeAccent;
+    return Colors.redAccent;
   }
 }
