@@ -32,29 +32,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _markAsRead(String id) async {
+    try {
+      await _supabase.from('notifications_quakesafe').update({'is_read': true}).eq('id', id);
+      _fetchNotifications();
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
+
+  Future<void> _deleteNotification(String id) async {
+    try {
+      await _supabase.from('notifications_quakesafe').delete().eq('id', id);
+      _fetchNotifications();
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Bildirimler")),
+      backgroundColor: Colors.black,
+      appBar: AppBar(title: const Text("Bildirimler"), backgroundColor: Colors.black),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : _notifications.isEmpty
-              ? const Center(child: Text("Bildirim bulunamadı."))
+              ? const Center(child: Text("Bildirim bulunamadı.", style: TextStyle(color: Colors.grey)))
               : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   itemCount: _notifications.length,
                   itemBuilder: (context, index) {
                     final notif = _notifications[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: const Icon(Icons.notifications_active, color: Colors.purple),
-                        title: Text(notif['title'] ?? "Bildirim"),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(notif['message'] ?? ""),
-                            Text(notif['created_at'].toString().substring(0, 16), style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                          ],
+                    final isRead = notif['is_read'] ?? false;
+                    return Dismissible(
+                      key: Key(notif['id'].toString()),
+                      background: Container(
+                        color: Colors.red[900],
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (_) => _deleteNotification(notif['id'].toString()),
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: isRead ? Colors.white.withOpacity(0.02) : Colors.white.withOpacity(0.08),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: isRead ? Colors.transparent : Colors.purple.withOpacity(0.3))),
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(color: (isRead ? Colors.grey : Colors.purple).withOpacity(0.1), shape: BoxShape.circle),
+                            child: Icon(Icons.notifications_active, color: isRead ? Colors.grey : Colors.purple),
+                          ),
+                          title: Text(notif['title'] ?? "Bildirim", style: TextStyle(color: Colors.white, fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(notif['message'] ?? "", style: TextStyle(color: isRead ? Colors.grey : Colors.grey[300])),
+                              const SizedBox(height: 5),
+                              Text(notif['created_at'].toString().substring(0, 16), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                            ],
+                          ),
+                          trailing: !isRead ? TextButton(onPressed: () => _markAsRead(notif['id'].toString()), child: const Text("Okundu", style: TextStyle(color: Colors.purple, fontSize: 12))) : null,
                         ),
                       ),
                     );

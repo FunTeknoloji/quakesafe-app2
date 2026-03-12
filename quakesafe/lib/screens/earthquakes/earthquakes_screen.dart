@@ -43,45 +43,60 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(width: 50, height: 5, decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(10))),
             ),
+            const SizedBox(height: 30),
+            Text(quake['title'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 20),
-            Text(quake['title'], style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            const Divider(),
-            const SizedBox(height: 10),
+            const Divider(color: Colors.white12),
+            const SizedBox(height: 20),
             _detailRow(Icons.waves, "Büyüklük", "${quake['mag']}"),
             _detailRow(Icons.vertical_align_bottom, "Derinlik", "${quake['depth']} km"),
             _detailRow(Icons.calendar_today, "Tarih", quake['date']),
             _detailRow(Icons.location_on, "Koordinat", "${quake['geojson']['coordinates'][1]}, ${quake['geojson']['coordinates'][0]}"),
-            const SizedBox(height: 20),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+                child: const Text("Kapat", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
           ],
         ),
-      ).animate().slideY(begin: 1, end: 0, duration: 300.ms),
+      ).animate().slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutBack),
     );
   }
 
   Widget _detailRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.purple, size: 20),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: Colors.purple, size: 22),
+          ),
           const SizedBox(width: 15),
-          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 16)),
           const Spacer(),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
         ],
       ),
     );
@@ -90,34 +105,58 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Son Depremler"),
-        actions: [IconButton(onPressed: _fetchQuakes, icon: const Icon(Icons.refresh))],
+        title: const Text("Son Depremler", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        actions: [IconButton(onPressed: _fetchQuakes, icon: const Icon(Icons.refresh, color: Colors.purple))],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 10),
               itemCount: _quakes.length,
               itemBuilder: (context, index) {
                 final quake = _quakes[index];
                 final mag = double.tryParse(quake['mag'].toString()) ?? 0;
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: _getMagColor(mag).withOpacity(0.2),
-                    child: Text("${quake['mag']}", style: TextStyle(color: _getMagColor(mag), fontWeight: FontWeight.bold)),
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
                   ),
-                  title: Text(quake['title']),
-                  subtitle: Text(quake['date']),
-                  onTap: () => _showDetails(quake),
-                ).animate().fadeIn(delay: (index * 20).ms).slideX(begin: 0.1, end: 0);
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      width: 50,
+                      height: 50,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _getMagColor(mag).withOpacity(0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _getMagColor(mag).withOpacity(0.3)),
+                      ),
+                      child: Text("${quake['mag']}", style: TextStyle(color: _getMagColor(mag), fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                    title: Text(quake['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(quake['date'], style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white24),
+                    onTap: () => _showDetails(quake),
+                  ),
+                ).animate().fadeIn(delay: (index * 15).ms).slideX(begin: 0.05, end: 0);
               },
             ),
     );
   }
 
   Color _getMagColor(double mag) {
-    if (mag < 3.0) return Colors.green;
-    if (mag < 5.0) return Colors.orange;
-    return Colors.red;
+    if (mag < 3.0) return Colors.greenAccent;
+    if (mag < 5.0) return Colors.orangeAccent;
+    return Colors.redAccent;
   }
 }

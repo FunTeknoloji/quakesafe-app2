@@ -10,7 +10,6 @@ import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
 import '../widgets/placeholder_card.dart';
 import 'notifications/notifications_screen.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -98,47 +97,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCardWidget(HomeCard card) {
-    Widget child;
     switch (card.id) {
       case 'quick_tools':
-        child = QuickToolsWidget(key: ValueKey(card.id));
-        break;
+        return QuickToolsWidget(key: ValueKey(card.id));
       case 'status_report':
-        child = StatusReportWidget(key: ValueKey(card.id));
-        break;
+        return StatusReportWidget(key: ValueKey(card.id));
       case 'last_quake':
-        child = LastQuakeWidget(key: ValueKey(card.id));
-        break;
+        return LastQuakeWidget(key: ValueKey(card.id));
       case 'spirit_level':
-        child = SpiritLevelWidget(key: ValueKey(card.id));
-        break;
+        return SpiritLevelWidget(key: ValueKey(card.id));
       case 'compass':
-        child = CompassWidget(key: ValueKey(card.id));
-        break;
+        return CompassWidget(key: ValueKey(card.id));
       case 'daily_tip':
-        child = DailyTipWidget(key: ValueKey(card.id));
-        break;
+        return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas':
-        child = AssemblyAreaWidget(key: ValueKey(card.id));
-        break;
+        return AssemblyAreaWidget(key: ValueKey(card.id));
       default:
-        child = PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
+        return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
     }
-    return child.animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("QuakeSafe"),
+        title: const Text("QuakeSafe", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.black,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(_isEditMode ? Icons.check : Icons.edit, color: Colors.purple),
             onPressed: () => setState(() => _isEditMode = !_isEditMode),
           ),
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications, color: Colors.purple),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
             },
@@ -147,12 +140,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _isEditMode
           ? ReorderableListView(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(bottom: 20, top: 10),
               onReorder: _onReorder,
               children: _cards.map((card) => _buildEditCard(card)).toList(),
             )
           : ListView(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(bottom: 20, top: 10),
               children: _cards.map((card) => _buildCardWidget(card)).toList(),
             ),
     );
@@ -162,10 +155,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Card(
       key: ValueKey("edit_${card.id}"),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.white.withOpacity(0.05),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.white.withOpacity(0.1))),
       child: ListTile(
         leading: Icon(card.icon, color: Colors.purple),
-        title: Text(card.title),
-        trailing: const Icon(Icons.drag_handle),
+        title: Text(card.title, style: const TextStyle(color: Colors.white)),
+        trailing: const Icon(Icons.drag_handle, color: Colors.grey),
       ),
     );
   }

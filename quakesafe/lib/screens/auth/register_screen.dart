@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../main.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,27 +15,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isLoading = false;
+  bool _obscureText = true;
   final _authService = AuthService();
 
   Future<void> _register() async {
     setState(() => _isLoading = true);
     try {
-      await _authService.signUpWithEmail(_emailController.text, _passwordController.text);
-      // In a real app, you'd also save the name to Supabase profile table here
+      await _authService.register(
+        _emailController.text,
+        _passwordController.text,
+        _nameController.text
+      );
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-          (route) => false,
-        );
+        _showSuccessDialog();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: ${e.toString()}")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: e.toString().contains("başarılı") ? Colors.green[900] : Colors.red[900],
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Kayıt Başarılı", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text(
+          "Hesabınız oluşturuldu. Devam etmek için lütfen e-posta adresinize gönderilen onay bağlantısına tıklayın.",
+          style: TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text("Giriş Sayfasına Dön", style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -43,45 +75,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(backgroundColor: Colors.transparent),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Kayıt Ol", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            const Text("Yeni bir hesap oluşturun", style: TextStyle(color: Colors.grey)),
+            const Text("Yeni Hesap Oluştur", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 10),
+            const Text("QuakeSafe ailesine katılarak sevdiklerinizi koruyun", style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 40),
-            TextField(
+            _buildTextField(
               controller: _nameController,
-              decoration: InputDecoration(
-                hintText: "Ad Soyad",
-                filled: true,
-                fillColor: Colors.grey[900],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-              ),
+              hint: "Ad Soyad",
+              icon: Icons.person,
             ),
             const SizedBox(height: 16),
-            TextField(
+            _buildTextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                hintText: "E-posta",
-                filled: true,
-                fillColor: Colors.grey[900],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-              ),
+              hint: "E-posta",
+              icon: Icons.email,
             ),
             const SizedBox(height: 16),
-            TextField(
+            _buildTextField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Şifre",
-                filled: true,
-                fillColor: Colors.grey[900],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-              ),
+              hint: "Şifre",
+              icon: Icons.lock,
+              isPassword: true,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -90,14 +110,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  elevation: 5,
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Kayıt Ol", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    : const Text("Kayıt Ol", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Zaten hesabınız var mı? Giriş Yapın", style: TextStyle(color: Colors.purple)),
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Row(
+              children: [
+                Expanded(child: Divider()),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("VEYA", style: TextStyle(color: Colors.grey, fontSize: 12))),
+                Expanded(child: Divider()),
+              ],
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: OutlinedButton.icon(
+                onPressed: () => _authService.signInWithGoogle(),
+                icon: const Icon(Icons.login, color: Colors.white),
+                label: const Text("Google ile Kayıt Ol", style: TextStyle(color: Colors.white)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword && _obscureText,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.purple),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
+                onPressed: () => setState(() => _obscureText = !_obscureText),
+              )
+            : null,
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
       ),
     );
   }

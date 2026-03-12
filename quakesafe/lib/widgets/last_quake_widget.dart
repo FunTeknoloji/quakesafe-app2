@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class LastQuakeWidget extends StatefulWidget {
   const LastQuakeWidget({super.key});
@@ -33,16 +34,19 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
       }
     } catch (e) {
       debugPrint('Error fetching quake: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(16),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -51,52 +55,51 @@ class _LastQuakeWidgetState extends State<LastQuakeWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Son Deprem", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                IconButton(onPressed: _fetchLastQuake, icon: const Icon(Icons.refresh, size: 20)),
+                const Row(
+                  children: [
+                    Icon(Icons.waves, color: Colors.purple, size: 20),
+                    SizedBox(width: 10),
+                    Text("Son Deprem", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+                IconButton(onPressed: _fetchLastQuake, icon: const Icon(Icons.refresh, size: 20, color: Colors.purple)),
               ],
             ),
             const SizedBox(height: 10),
             if (_isLoading)
-              const Center(child: CircularProgressIndicator())
+              const Center(child: CircularProgressIndicator(color: Colors.purple))
             else if (_lastQuake == null)
-              const Text("Veri alınamadı")
+              const Text("Veri alınamadı", style: TextStyle(color: Colors.grey))
             else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: _getMagColor(double.tryParse(_lastQuake!['mag'].toString()) ?? 0),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          _lastQuake!['mag'].toString(),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(_lastQuake!['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                            Text(_lastQuake!['date'], style: const TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _getMagColor(double.tryParse(_lastQuake!['mag'].toString()) ?? 0).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      _lastQuake!['mag'].toString(),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: _getMagColor(double.tryParse(_lastQuake!['mag'].toString()) ?? 0)),
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Text("Derinlik: ${_lastQuake!['depth']} km"),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_lastQuake!['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                        Text(_lastQuake!['date'], style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn().slideX(begin: -0.1, end: 0);
   }
 
   Color _getMagColor(double mag) {
