@@ -1,35 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'screens/home_screen.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/intro/intro_screen.dart';
 import 'screens/earthquakes/earthquakes_screen.dart';
 import 'screens/family/family_screen.dart';
-import 'screens/profile/profile_screen.dart';
 import 'screens/other_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/intro/intro_screen.dart';
+import 'services/settings_provider.dart';
+import 'services/notification_service.dart';
+import 'constants.dart';
+import 'translations.dart';
 
 @pragma('vm:entry-point')
 Future<void> _backgroundCallback(Uri? uri) async {
   if (uri?.host == 'status') {
-    final type = uri?.queryParameters['type'];
-    // Trigger reporting via Supabase directly in background if possible
-    // Note: This requires Supabase to be initialized in the background isolate too
+    // Background action handling
   }
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final notificationService = NotificationService();
+  await notificationService.init();
+
+  await Hive.initFlutter();
+  await Hive.openBox('settings');
+  await Hive.openBox('cache');
+
   HomeWidget.registerInteractivityCallback(_backgroundCallback);
 
   await Supabase.initialize(
-    url: 'https://kiekqhznukzjjqcyzxfv.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZWtxaHpudWt6ampxY3l6eGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTExNDMsImV4cCI6MjA4NDcyNzE0M30.dIx55-8N0XtgFwfBpu-Sdhyp74I5Yomr8G4AKhvCJmE',
+    url: AppConstants.supabaseUrl,
+    anonKey: AppConstants.supabaseAnonKey,
   );
 
-  runApp(const QuakeSafeApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => SettingsProvider(),
+      child: const QuakeSafeApp(),
+    ),
+  );
 }
 
 class QuakeSafeApp extends StatelessWidget {
@@ -37,10 +52,16 @@ class QuakeSafeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+
     return MaterialApp(
       title: 'QuakeSafe',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.darkTheme.copyWith(
+        textTheme: AppTheme.darkTheme.textTheme.apply(
+          fontSizeFactor: settings.fontSizeFactor,
+        ),
+      ),
       home: const AuthWrapper(),
     );
   }
@@ -86,35 +107,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
         children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Ana Sayfa'),
-          BottomNavigationBarItem(icon: Icon(Icons.waves), label: 'Depremler'),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Ailem'),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: 'Diğer'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: AppTranslations.t('home', settings.language)),
+          BottomNavigationBarItem(icon: const Icon(Icons.waves), label: AppTranslations.t('quakes', settings.language)),
+          BottomNavigationBarItem(icon: const Icon(Icons.group), label: AppTranslations.t('family', settings.language)),
+          BottomNavigationBarItem(icon: const Icon(Icons.more_horiz), label: AppTranslations.t('other', settings.language)),
+          BottomNavigationBarItem(icon: const Icon(Icons.person), label: AppTranslations.t('profile', settings.language)),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
-    );
-  }
-}
-
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const PlaceholderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text("$title sayfası yakında eklenecek.")),
     );
   }
 }

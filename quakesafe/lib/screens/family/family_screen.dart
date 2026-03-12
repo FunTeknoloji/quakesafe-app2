@@ -71,7 +71,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
               if (nameController.text.isEmpty) return;
               try {
                 final inviteCode = _generateInviteCode();
-                final group = await _supabase.from('family_groups').insert({
+                final groupResponse = await _supabase.from('family_groups').insert({
                   'name': nameController.text,
                   'city': cityController.text,
                   'meeting_point_text': meetingPointController.text,
@@ -79,7 +79,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
                 }).select().single();
 
                 await _supabase.from('family_members').insert({
-                  'group_id': group['id'],
+                  'group_id': groupResponse['id'],
                   'user_id': _supabase.auth.currentUser!.id,
                   'role': 'admin',
                 });

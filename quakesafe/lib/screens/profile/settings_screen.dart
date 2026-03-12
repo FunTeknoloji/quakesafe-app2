@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../../services/settings_provider.dart';
 import '../../services/auth_service.dart';
 import '../auth/login_screen.dart';
 
@@ -54,6 +56,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (value is bool) await _prefs.setBool(key, value);
     if (value is double) await _prefs.setDouble(key, value);
     if (value is String) await _prefs.setString(key, value);
+
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if (key == 'animations') settings.setAnimations(value);
+    if (key == 'font_size') settings.setFontSize(value);
+    if (key == 'language') settings.setLanguage(value);
 
     if (key == 'block_foreign' || key == 'block_vpn') {
       final dbKey = key == 'block_foreign' ? 'block_foreign_access' : 'block_vpn';

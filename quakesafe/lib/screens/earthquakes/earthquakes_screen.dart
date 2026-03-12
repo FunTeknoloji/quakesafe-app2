@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import '../../services/settings_provider.dart';
+import '../../translations.dart';
 
 class EarthquakesScreen extends StatefulWidget {
   const EarthquakesScreen({super.key});
@@ -122,10 +125,11 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Son Depremler", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(AppTranslations.t('last_quakes', settings.language), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.black,
         elevation: 0,
         actions: [IconButton(onPressed: _fetchQuakes, icon: const Icon(Icons.refresh, color: Colors.purple))],

@@ -41,7 +41,7 @@ class _EmergencyCallScreenState extends State<EmergencyCallScreen> {
 
   Future<void> _addContact() async {
     try {
-      if (await FlutterContacts.requestPermission()) {
+      if (await FlutterContacts.requestPermission(readonly: true)) {
         final contact = await FlutterContacts.openExternalPick();
         if (contact != null && contact.phones.isNotEmpty) {
           String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');

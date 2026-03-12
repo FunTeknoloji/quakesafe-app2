@@ -10,8 +10,10 @@ import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
 import '../widgets/placeholder_card.dart';
 import 'notifications/notifications_screen.dart';
+import '../translations.dart';
+import '../services/settings_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:home_widget/home_widget.dart';
-import '../widgets/status_report_widget.dart';
 import 'package:torch_light/torch_light.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,6 +26,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<HomeCard> _cards = [];
   bool _isEditMode = false;
+  final _storageService = StorageService();
 
   final Map<String, IconData> _iconMap = {
     'quick_tools': Icons.bolt,
@@ -50,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _setupHomeWidget() {
-    HomeWidget.setAppGroupId('YOUR_GROUP_ID'); // Not needed for Android but good practice
     HomeWidget.initiallyLaunchedFromHomeWidget().then(_handleWidgetAction);
     HomeWidget.widgetClicked.listen(_handleWidgetAction);
   }
@@ -61,8 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (uri.host == 'status') {
       final type = uri.queryParameters['type'];
       final bool isSafe = type == 'safe';
-      // I can't easily call the method from StatusReportWidget directly because it's in another file
-      // I'll implement a static helper or move logic to a service
       _reportStatusFromWidget(isSafe);
     } else if (uri.host == 'tool') {
       final type = uri.queryParameters['type'];
@@ -73,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
           await TorchLight.disableTorch();
         }
       } else if (type == 'sos') {
-        // SOS logic usually requires a loop, hard to do purely from background click without main app
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("SOS Modu Etkinleştirildi")));
       } else if (type == 'whistle') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Düdük Sesi Çalınıyor")));
@@ -86,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadCards() async {
-    final order = await StorageService.getCardOrder();
+    final order = await _storageService.getCardOrder();
     final List<HomeCard> defaultCards = [
       HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
       HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
@@ -132,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       final item = _cards.removeAt(oldIndex);
       _cards.insert(newIndex, item);
-      StorageService.saveCardOrder(_cards.map((e) => e.id).toList());
+      _storageService.saveCardOrder(_cards.map((e) => e.id).toList());
     });
   }
 
@@ -159,10 +158,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("QuakeSafe", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(AppTranslations.t('app_name', settings.language), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.black,
         centerTitle: true,
         actions: [

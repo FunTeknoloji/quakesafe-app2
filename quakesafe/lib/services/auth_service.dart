@@ -2,12 +2,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:safe_device/safe_device.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
-  final _storage = const FlutterSecureStorage();
+  final _cache = Hive.box('cache');
 
   Future<void> login(String email, String password) async {
     try {
@@ -30,8 +29,10 @@ class AuthService {
       }
 
       if (profile['block_vpn'] == true) {
-        if (await SafeDevice.isJailBroken || await SafeDevice.isRealDevice == false) {
-          // Placeholder check
+        bool isVpn = await SafeDevice.isProxyEnabled || await SafeDevice.isRealDevice == false;
+        if (isVpn) {
+          await _supabase.auth.signOut();
+          throw "VPN veya Proxy kullanımı yasaktır.";
         }
       }
 
@@ -46,7 +47,7 @@ class AuthService {
         }
       }
 
-      await _storage.write(key: 'user_profile', value: json.encode(profile));
+      await _cache.put('user_profile', profile);
     } catch (e) {
       if (e is AuthException) {
         throw "Giriş başarısız: E-posta veya şifre hatalı.";
@@ -59,14 +60,10 @@ class AuthService {
     try {
       final user = _supabase.auth.currentUser;
       if (user != null) {
-        // Supabase doesn't allow users to delete themselves directly via GoTrue without admin rights usually
-        // But we can trigger a function or at least sign out and clear local data.
-        // For a real app, you'd use a Supabase Edge Function.
         await _supabase.from('profiles_quakesafe').delete().eq('id', user.id);
         await _supabase.auth.signOut();
-        await _storage.deleteAll();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
+        await _cache.clear();
+        await Hive.box('settings').clear();
       }
     } catch (e) {
       throw "Hesap silinemedi: $e";
@@ -102,13 +99,13 @@ class AuthService {
 
   Future<void> signOut() async {
     await _supabase.auth.signOut();
-    await _storage.delete(key: 'user_profile');
+    await _cache.delete('user_profile');
   }
 
-  Future<Map<String, dynamic>?> getLocalProfile() async {
-    final data = await _storage.read(key: 'user_profile');
+  Map<String, dynamic>? getLocalProfile() {
+    final data = _cache.get('user_profile');
     if (data != null) {
-      return json.decode(data);
+      return Map<String, dynamic>.from(data);
     }
     return null;
   }
