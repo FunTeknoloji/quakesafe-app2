@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'settings_screen.dart';
+import 'profile_edit_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -44,6 +45,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.black,
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit, color: Colors.purple),
+            onPressed: () async {
+              if (_profile != null) {
+                final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileEditScreen(profile: _profile!)));
+                if (result == true) _fetchProfile();
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings, color: Colors.purple),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
           ),
@@ -74,14 +84,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             CircleAvatar(
               radius: 60,
-              backgroundColor: Colors.purple.withOpacity(0.1),
+              backgroundColor: Colors.purple.withValues(alpha: 0.1),
               backgroundImage: _profile?['avatar_url'] != null ? NetworkImage(_profile!['avatar_url']) : null,
               child: _profile?['avatar_url'] == null ? const Icon(Icons.person, size: 60, color: Colors.purple) : null,
             ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle),
-              child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+            GestureDetector(
+              onTap: () {
+                // Logic for avatar update
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Fotoğraf güncelleme yakında eklenecek!")));
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.purple, shape: BoxShape.circle),
+                child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -124,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _infoCard(IconData icon, String label, dynamic value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white.withOpacity(0.05))),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white.withValues(alpha: 0.05))),
       child: Row(
         children: [
           Icon(icon, color: Colors.purple, size: 20),
@@ -149,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white.withOpacity(0.05))),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white.withValues(alpha: 0.05))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

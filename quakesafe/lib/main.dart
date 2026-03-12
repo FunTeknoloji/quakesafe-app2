@@ -7,6 +7,7 @@ import 'screens/intro/intro_screen.dart';
 import 'screens/earthquakes/earthquakes_screen.dart';
 import 'screens/family/family_screen.dart';
 import 'screens/profile/profile_screen.dart';
+import 'screens/other_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +62,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     HomeScreen(),
     EarthquakesScreen(),
     FamilyScreen(),
-    PlaceholderScreen(title: "Diğer"),
+    OtherScreen(),
     ProfileScreen(),
   ];
 

@@ -23,13 +23,15 @@ class _FamilyScreenState extends State<FamilyScreen> {
   }
 
   Future<void> _fetchGroups() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
       final response = await _supabase
           .from('family_members')
           .select('group_id, family_groups(*)')
-          .eq('user_id', userId!);
+          .eq('user_id', userId);
 
       setState(() {
         _groups = response;
@@ -49,39 +51,46 @@ class _FamilyScreenState extends State<FamilyScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text("Yeni Grup Oluştur", style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dialogField(nameController, "Grup İsmi"),
-            _dialogField(locationController, "Ev Konumu (Adres)"),
-            _dialogField(assemblyController, "Toplanma Alanı"),
-          ],
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Yeni Grup Oluştur", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _dialogField(nameController, "Grup İsmi", Icons.group),
+              _dialogField(locationController, "Ev Konumu (Adres)", Icons.location_on),
+              _dialogField(assemblyController, "Toplanma Alanı", Icons.map),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("İptal", style: TextStyle(color: Colors.grey))),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.isEmpty) return;
-              final inviteCode = _generateInviteCode();
-              final group = await _supabase.from('family_groups').insert({
-                'name': nameController.text,
-                'location': locationController.text,
-                'assembly_area': assemblyController.text,
-                'invite_code': inviteCode,
-              }).select().single();
+              try {
+                final inviteCode = _generateInviteCode();
+                final group = await _supabase.from('family_groups').insert({
+                  'name': nameController.text,
+                  'location': locationController.text,
+                  'assembly_area': assemblyController.text,
+                  'invite_code': inviteCode,
+                }).select().single();
 
-              await _supabase.from('family_members').insert({
-                'group_id': group['id'],
-                'user_id': _supabase.auth.currentUser!.id,
-                'role': 'admin',
-              });
+                await _supabase.from('family_members').insert({
+                  'group_id': group['id'],
+                  'user_id': _supabase.auth.currentUser!.id,
+                  'role': 'admin',
+                });
 
-              Navigator.pop(context);
-              _fetchGroups();
+                if (mounted) Navigator.pop(context);
+                _fetchGroups();
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e")));
+              }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text("Oluştur", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -94,9 +103,10 @@ class _FamilyScreenState extends State<FamilyScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text("Gruba Katıl", style: TextStyle(color: Colors.white)),
-        content: _dialogField(codeController, "Davet Kodu"),
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Gruba Katıl", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: _dialogField(codeController, "Davet Kodu", Icons.vpn_key),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("İptal", style: TextStyle(color: Colors.grey))),
           ElevatedButton(
@@ -108,13 +118,13 @@ class _FamilyScreenState extends State<FamilyScreen> {
                   'user_id': _supabase.auth.currentUser!.id,
                   'role': 'member',
                 });
-                Navigator.pop(context);
+                if (mounted) Navigator.pop(context);
                 _fetchGroups();
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Geçersiz davet kodu!")));
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Geçersiz davet kodu veya zaten üyesiniz!")));
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[900], shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text("Katıl", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -126,7 +136,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
     return (100000 + Random().nextInt(900000)).toString();
   }
 
-  Widget _dialogField(TextEditingController controller, String hint) {
+  Widget _dialogField(TextEditingController controller, String hint, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextField(
@@ -134,10 +144,12 @@ class _FamilyScreenState extends State<FamilyScreen> {
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: hint,
+          prefixIcon: Icon(icon, color: Colors.purple, size: 20),
           hintStyle: const TextStyle(color: Colors.grey),
           filled: true,
-          fillColor: Colors.black.withOpacity(0.2),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+          fillColor: Colors.black.withValues(alpha: 0.2),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.purple, width: 1)),
         ),
       ),
     );
@@ -147,7 +159,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text("Ailem"), backgroundColor: Colors.black),
+      appBar: AppBar(title: const Text("Ailem"), backgroundColor: Colors.black, actions: [IconButton(onPressed: _fetchGroups, icon: const Icon(Icons.refresh, color: Colors.purple))]),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.purple))
           : Column(
@@ -156,15 +168,25 @@ class _FamilyScreenState extends State<FamilyScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     children: [
-                      Expanded(child: _actionButton(Icons.add, "Grup Oluştur", Colors.purple, _createGroup)),
+                      Expanded(child: _actionButton(Icons.add_circle_outline, "Grup Oluştur", Colors.purple, _createGroup)),
                       const SizedBox(width: 12),
-                      Expanded(child: _actionButton(Icons.group_add, "Gruba Katıl", Colors.blue[900]!, _joinGroup)),
+                      Expanded(child: _actionButton(Icons.group_add_outlined, "Gruba Katıl", Colors.blue[900]!, _joinGroup)),
                     ],
                   ),
                 ),
                 Expanded(
                   child: _groups.isEmpty
-                      ? const Center(child: Text("Henüz bir grubunuz yok.", style: TextStyle(color: Colors.grey)))
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.people_outline, size: 60, color: Colors.grey.withValues(alpha: 0.3)),
+                              const SizedBox(height: 15),
+                              const Text("Henüz bir grubunuz yok.", style: TextStyle(color: Colors.grey)),
+                              const Text("Hemen bir grup oluşturun veya katılın.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: _groups.length,
@@ -172,22 +194,29 @@ class _FamilyScreenState extends State<FamilyScreen> {
                             final group = _groups[index]['family_groups'];
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
-                              color: Colors.white.withOpacity(0.05),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                              color: const Color(0xFF1A1A1A),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
                               child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                                 leading: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), shape: BoxShape.circle),
-                                  child: const Icon(Icons.group, color: Colors.purple),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(15)),
+                                  child: const Icon(Icons.groups_rounded, color: Colors.purple),
                                 ),
-                                title: Text(group['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                subtitle: Text("Kod: ${group['invite_code']}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+                                title: Text(group['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    Text("Kod: ${group['invite_code']}", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                  ],
+                                ),
+                                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 16),
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(groupId: group['id'].toString(), groupName: group['name'])));
                                 },
                               ),
-                            ).animate().fadeIn(delay: (index * 50).ms).slideX(begin: 0.05, end: 0);
+                            ).animate().fadeIn(delay: (index * 40).ms).slideX(begin: 0.05, end: 0);
                           },
                         ),
                 ),
@@ -199,9 +228,14 @@ class _FamilyScreenState extends State<FamilyScreen> {
   Widget _actionButton(IconData icon, String label, Color color, VoidCallback onTap) {
     return ElevatedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, color: Colors.white, size: 20),
-      label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-      style: ElevatedButton.styleFrom(backgroundColor: color, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      icon: Icon(icon, color: Colors.white, size: 22),
+      label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 0,
+      ),
     );
   }
 }
