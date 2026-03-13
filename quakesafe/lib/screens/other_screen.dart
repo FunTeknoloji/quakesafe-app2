@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/settings_provider.dart';
@@ -12,6 +13,7 @@ import 'health_map_screen.dart';
 import 'city_chat_screen.dart';
 import 'disaster_plan_screen.dart';
 import 'tools_screen.dart';
+import 'mesh_chat_screen.dart';
 import 'first_aid_screen.dart';
 import 'disaster_guides_screen.dart';
 import 'simple_info_screen.dart';
@@ -71,10 +73,10 @@ class OtherScreen extends StatelessWidget {
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               itemBuilder: (context, index) {
-                final item = _items[index];
+                final item = _getItems(lang)[index];
                 return _buildGridCard(context, item);
               },
-              childCount: _items.length,
+              childCount: _getItems(lang).length,
             ),
           ),
         ],
@@ -162,6 +164,7 @@ class OtherScreen extends StatelessWidget {
   }
 
   static List<OtherItem> _getItems(String lang) => [
+    OtherItem(AppTranslations.t('mesh_mode', lang), lang == "Türkçe" ? "INTERNETSİZ MESAJ" : "OFFLINE CHAT", Icons.wifi_tethering, Colors.blueGrey, screen: const MeshChatScreen()),
     OtherItem(AppTranslations.t('tools_bag', lang), AppTranslations.t('equipment', lang), Icons.construction, Colors.amber, screen: const ToolsScreen()),
     OtherItem(AppTranslations.t('voice_command', lang), AppTranslations.t('hands_free', lang), Icons.mic, Colors.blue, screen: const VoiceControlScreen()),
     OtherItem(AppTranslations.t('news', lang), lang == "Türkçe" ? "SON DAKİKA" : "BREAKING NEWS", Icons.newspaper, Colors.orange, screen: const NewsScreen()),

@@ -35,7 +35,6 @@ class _CityChatScreenState extends State<CityChatScreen> with SingleTickerProvid
     _generalStream = _supabase
         .from('city_chat_messages')
         .stream(primaryKey: ['id'])
-        .eq('is_general', true)
         .order('created_at', ascending: false)
         .limit(50);
 
@@ -43,8 +42,6 @@ class _CityChatScreenState extends State<CityChatScreen> with SingleTickerProvid
       _cityStream = _supabase
           .from('city_chat_messages')
           .stream(primaryKey: ['id'])
-          .eq('city', _userCity!)
-          .eq('is_general', false)
           .order('created_at', ascending: false)
           .limit(50);
     } else {
@@ -116,7 +113,14 @@ class _CityChatScreenState extends State<CityChatScreen> with SingleTickerProvid
             stream: stream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-              final messages = snapshot.data ?? [];
+              var messages = snapshot.data ?? [];
+
+              if (isGeneral) {
+                messages = messages.where((m) => m['is_general'] == true).toList();
+              } else {
+                messages = messages.where((m) => m['is_general'] == false && m['city'] == _userCity).toList();
+              }
+
               return ListView.builder(
                 reverse: true,
                 padding: const EdgeInsets.all(16),
