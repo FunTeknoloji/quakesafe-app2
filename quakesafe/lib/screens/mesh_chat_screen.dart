@@ -34,10 +34,6 @@ class _MeshChatScreenState extends State<MeshChatScreen> {
       Permission.bluetoothAdvertise,
       Permission.location,
     ].request();
-
-    if (await Nearby().checkBluetoothPermission() == false) {
-      Nearby().askBluetoothPermission();
-    }
   }
 
   void _toggleMesh() async {
