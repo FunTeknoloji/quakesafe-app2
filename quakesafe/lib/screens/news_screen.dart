@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dart_rss/dart_rss.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,8 @@ class _NewsScreenState extends State<NewsScreen> {
       try {
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
-          final feed = RssFeed.parse(response.body);
+          final decodedBody = utf8.decode(response.bodyBytes, allowMalformed: true);
+          final feed = RssFeed.parse(decodedBody);
           allItems.addAll(feed.items);
         }
       } catch (_) {}

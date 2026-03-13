@@ -9,6 +9,7 @@ import '../widgets/compass_widget.dart';
 import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
 import '../widgets/weather_widget.dart';
+import '../widgets/last_quake_widget.dart';
 import '../widgets/placeholder_card.dart';
 import 'notifications/notifications_screen.dart';
 import '../translations.dart';
@@ -71,11 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
       HomeCard(id: 'quick_guides', title: 'Hızlı Rehberler', icon: _iconMap['quick_guides']!),
       HomeCard(id: 'weather', title: 'Hava Durumu', icon: _iconMap['weather']!),
-      HomeCard(id: 'quick_tools', title: 'Hızlı Araçlar', icon: _iconMap['quick_tools']!),
       HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
       HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
-      HomeCard(id: 'compass', title: 'Pusula', icon: _iconMap['compass']!),
-      HomeCard(id: 'spirit_level', title: 'Su Terazisi', icon: _iconMap['spirit_level']!),
     ];
 
     if (order != null) {
@@ -106,11 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCardWidget(HomeCard card) {
     switch (card.id) {
-      case 'quick_tools': return QuickToolsWidget(key: ValueKey(card.id));
       case 'status_report': return StatusReportWidget(key: ValueKey(card.id));
-      case 'last_quake': return const RecentChatsWidget();
-      case 'spirit_level': return SpiritLevelWidget(key: ValueKey(card.id));
-      case 'compass': return CompassWidget(key: ValueKey(card.id));
+      case 'last_quake': return const LastQuakeWidget();
+      case 'recent_chats': return const RecentChatsWidget();
       case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
       case 'weather': return const WeatherWidget(key: ValueKey('weather_widget'));

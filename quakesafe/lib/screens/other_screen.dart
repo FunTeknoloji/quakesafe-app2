@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/settings_provider.dart';
+import '../translations.dart';
 import 'fun_ai_screen.dart';
 import 'voice_control_screen.dart';
 import 'news_screen.dart';
 import 'weather_screen.dart';
 import 'emergency_call_screen.dart';
+import 'health_map_screen.dart';
+import 'city_chat_screen.dart';
 import 'disaster_plan_screen.dart';
+import 'tools_screen.dart';
+import 'first_aid_screen.dart';
+import 'disaster_guides_screen.dart';
 import 'simple_info_screen.dart';
 
 class OtherScreen extends StatelessWidget {
@@ -14,6 +21,9 @@ class OtherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+    final lang = settings.language;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: CustomScrollView(
@@ -22,8 +32,8 @@ class OtherScreen extends StatelessWidget {
             expandedHeight: 100,
             backgroundColor: Colors.black,
             pinned: true,
-            flexibleSpace: const FlexibleSpaceBar(
-              title: Text("Keşfet & Hizmetler", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(AppTranslations.t('other', lang), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               centerTitle: true,
             ),
           ),
@@ -35,7 +45,7 @@ class OtherScreen extends StatelessWidget {
                   _buildLargeCard(
                     context,
                     "FunAI",
-                    "GELİŞMİŞ YAPAY ZEKA ASİSTANI",
+                    lang == "Türkçe" ? "GELİŞMİŞ YAPAY ZEKA ASİSTANI" : "ADVANCED AI ASSISTANT",
                     Icons.auto_awesome,
                     const Color(0xFF3D2C8D),
                     const Color(0xFF1C0C5B),
@@ -46,7 +56,7 @@ class OtherScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.grid_view_rounded, color: Colors.purple, size: 20),
                       const SizedBox(width: 10),
-                      const Text("TÜM SERVİSLER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 12)),
+                      Text(lang == "Türkçe" ? "TÜM SERVİSLER" : "ALL SERVICES", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -151,16 +161,17 @@ class OtherScreen extends StatelessWidget {
     ).animate().fadeIn(delay: 100.ms).scale(begin: const Offset(0.95, 0.95));
   }
 
-  static final List<OtherItem> _items = [
-    OtherItem("Sesli Komut", "ELLER SERBEST", Icons.mic, Colors.blue, screen: const VoiceControlScreen()),
-    OtherItem("Haberler", "SON DAKİKA", Icons.newspaper, Colors.orange, screen: const NewsScreen()),
-    OtherItem("Afet Planı", "AİLE HAZIRLIĞI", Icons.assignment, Colors.red, screen: const DisasterPlanScreen()),
-    OtherItem("Hava Durumu", "METEOROLOJİ", Icons.cloud, Colors.lightBlue, screen: const WeatherScreen()),
-    OtherItem("Acil Çağrı", "TEK TUŞ YARDIM", Icons.phone_in_talk, Colors.redAccent, screen: const EmergencyCallScreen()),
-    OtherItem("Şehir Sohbeti", "YEREL MESAJLAR", Icons.forum_outlined, Colors.green, screen: const SimpleInfoScreen(title: "Şehir Sohbeti")),
-    OtherItem("Sağlık Haritası", "HASTANELER", Icons.local_hospital_outlined, Colors.pink, screen: const SimpleInfoScreen(title: "Sağlık Haritası")),
-    OtherItem("İlk Yardım", "TEMEL EĞİTİM", Icons.medical_services_outlined, Colors.indigo, screen: const SimpleInfoScreen(title: "İlk Yardım")),
-    OtherItem("Rehberler", "DÖKÜMANTASYON", Icons.menu_book_outlined, Colors.deepOrange, screen: const SimpleInfoScreen(title: "Rehberler")),
+  static List<OtherItem> _getItems(String lang) => [
+    OtherItem(AppTranslations.t('tools_bag', lang), AppTranslations.t('equipment', lang), Icons.construction, Colors.amber, screen: const ToolsScreen()),
+    OtherItem(AppTranslations.t('voice_command', lang), AppTranslations.t('hands_free', lang), Icons.mic, Colors.blue, screen: const VoiceControlScreen()),
+    OtherItem(AppTranslations.t('news', lang), lang == "Türkçe" ? "SON DAKİKA" : "BREAKING NEWS", Icons.newspaper, Colors.orange, screen: const NewsScreen()),
+    OtherItem(AppTranslations.t('disaster_plan', lang), lang == "Türkçe" ? "AİLE HAZIRLIĞI" : "FAMILY PREP", Icons.assignment, Colors.red, screen: const DisasterPlanScreen()),
+    OtherItem(AppTranslations.t('weather', lang), AppTranslations.t('forecast', lang), Icons.cloud, Colors.lightBlue, screen: const WeatherScreen()),
+    OtherItem(AppTranslations.t('emergency_call', lang), lang == "Türkçe" ? "TEK TUŞ YARDIM" : "ONE TOUCH HELP", Icons.phone_in_talk, Colors.redAccent, screen: const EmergencyCallScreen()),
+    OtherItem(AppTranslations.t('city_chat', lang), lang == "Türkçe" ? "YEREL MESAJLAR" : "LOCAL MESSAGES", Icons.forum_outlined, Colors.green, screen: const CityChatScreen()),
+    OtherItem(AppTranslations.t('health_map', lang), lang == "Türkçe" ? "HASTANELER" : "HOSPITALS", Icons.local_hospital_outlined, Colors.pink, screen: const HealthMapScreen()),
+    OtherItem(AppTranslations.t('first_aid', lang), AppTranslations.t('basic_training', lang), Icons.medical_services_outlined, Colors.indigo, screen: const FirstAidScreen()),
+    OtherItem(AppTranslations.t('guides', lang), AppTranslations.t('documentation', lang), Icons.menu_book_outlined, Colors.deepOrange, screen: const DisasterGuidesScreen()),
   ];
 }
 
