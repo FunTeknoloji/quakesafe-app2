@@ -25,6 +25,7 @@ class _IntroScreenState extends State<IntroScreen> {
     Permission.notification,
     Permission.phone,
     Permission.systemAlertWindow,
+    Permission.ignoreBatteryOptimizations,
   ];
 
   Future<void> _requestAllPermissions() async {
@@ -179,6 +180,7 @@ class _IntroScreenState extends State<IntroScreen> {
           _permissionTile(Icons.camera_alt, AppTranslations.t('permission_camera', lang)),
           _permissionTile(Icons.mic, AppTranslations.t('permission_mic', lang)),
           _permissionTile(Icons.contacts, AppTranslations.t('permission_contacts', lang)),
+          _permissionTile(Icons.battery_saver, lang == "Türkçe" ? "Arka Plan: Kesintisiz koruma için." : "Background: For continuous protection."),
           const Spacer(),
           SizedBox(
             width: double.infinity,

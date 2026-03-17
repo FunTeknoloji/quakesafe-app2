@@ -316,6 +316,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildMessageBubble(Map<String, dynamic> msg, bool isMe, String userLang) {
     bool isEdited = msg['plan_data'] != null && msg['plan_data']['edited'] == true;
     bool isRead = msg['plan_data'] != null && msg['plan_data']['read'] == true;
+    bool isMesh = msg['plan_data'] != null && msg['plan_data']['mesh'] == true;
     String? translatedText = _translations[msg['id'].toString()];
 
     // Mark as read if not me and not already read
@@ -348,15 +349,21 @@ class _ChatScreenState extends State<ChatScreen> {
           margin: EdgeInsets.fromLTRB(isMe ? 50 : 16, 4, isMe ? 16 : 50, 4),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isMe ? Colors.purple : const Color(0xFF2C2C2C),
+            color: isMe ? Colors.purple : const Color(0xFF1E1E1E),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
               bottomLeft: Radius.circular(isMe ? 18 : 0),
               bottomRight: Radius.circular(isMe ? 0 : 18),
             ),
+            border: isMesh ? Border.all(color: Colors.blueGrey, width: 2) : null,
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (isMesh)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Text("MESH", style: TextStyle(color: Colors.blueGrey, fontSize: 8, fontWeight: FontWeight.bold)),
+              ),
             if (msg['type'] == 'image' && msg['media_url'] != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),

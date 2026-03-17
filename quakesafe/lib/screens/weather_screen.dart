@@ -25,12 +25,23 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   Future<void> _loadWeather() async {
+    // Cache load
+    final box = Hive.box('cache');
+    final cached = box.get('offline_weather');
+    if (cached != null) {
+      setState(() {
+         _weatherData = Map<String, dynamic>.from(cached);
+         _isLoading = false;
+      });
+    }
+
     final data = await _weatherService.fetchWeather();
-    if (mounted) {
+    if (mounted && data != null) {
       setState(() {
         _weatherData = data;
         _isLoading = false;
       });
+      box.put('offline_weather', data);
     }
   }
 

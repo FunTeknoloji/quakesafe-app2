@@ -13,6 +13,7 @@ import 'screens/intro/intro_screen.dart';
 import 'services/settings_provider.dart';
 import 'services/notification_service.dart';
 import 'services/early_warning_service.dart';
+import 'services/sync_service.dart';
 import 'constants.dart';
 import 'translations.dart';
 
@@ -44,6 +45,8 @@ Future<void> main() async {
 
     final earlyWarningService = EarlyWarningService();
     earlyWarningService.startDetection();
+
+    SyncService().startSync();
 
     HomeWidget.registerInteractivityCallback(_backgroundCallback);
 

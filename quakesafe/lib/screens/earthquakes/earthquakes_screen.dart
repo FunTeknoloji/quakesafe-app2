@@ -32,6 +32,18 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
       _isLoading = true;
       _error = null;
     });
+
+    // Try loading from cache first for immediate UI response
+    final box = Hive.box('cache');
+    final cached = box.get('offline_quakes');
+    if (cached != null) {
+      setState(() {
+         _allQuakes = List<dynamic>.from(cached);
+         _applyFilter();
+         _isLoading = false;
+      });
+    }
+
     try {
       final response = await http.get(Uri.parse('https://api.orhanaydogdu.com.tr/deprem/kandilli/live?limit=100'));
       if (response.statusCode == 200) {
@@ -42,6 +54,7 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
             _applyFilter();
             _isLoading = false;
           });
+          box.put('offline_quakes', data['result']);
         } else {
           setState(() {
             _error = "Veri formatı hatalı.";
