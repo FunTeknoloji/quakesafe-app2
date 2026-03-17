@@ -44,7 +44,7 @@ class MeshService {
 
   void _onConnectionInitiated(String id, ConnectionInfo info) {
     endpointMap[id] = info;
-    Nearby().acceptConnection(id, onPayloadReceived: (endpointId, payload) {
+    Nearby().acceptConnection(id, onPayLoadRecieved: (endpointId, payload) {
        if (payload.type == PayloadType.BYTES) {
           String msg = String.fromCharCodes(payload.bytes!);
           String senderName = endpointMap[endpointId]?.endpointName ?? "Bilinmeyen";

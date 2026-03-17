@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import '../services/settings_provider.dart';
-import '../translations.dart';
+import '../../services/settings_provider.dart';
+import '../../translations.dart';
 import '../auth/login_screen.dart';
 
 class IntroScreen extends StatefulWidget {

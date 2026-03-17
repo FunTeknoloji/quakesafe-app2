@@ -97,7 +97,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
       ),
       child: Column(
         children: [
-          Icon(_getWeatherIcon(current['weathercode']), size: 100, color: Colors.white).animate().scale(duration: 600.ms, curve: Curves.backOut),
+          Icon(_getWeatherIcon(current['weathercode']), size: 100, color: Colors.white).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 20),
           Text("${current['temperature']}°", style: const TextStyle(fontSize: 80, fontWeight: FontWeight.w200, color: Colors.white, letterSpacing: -4)),
           Text(lang == "Türkçe" ? "GÜNCEL DURUM" : "CURRENT STATUS", style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2)),

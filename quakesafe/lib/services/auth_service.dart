@@ -30,8 +30,7 @@ class AuthService {
 
       if (profile['block_vpn'] == true) {
         bool isSuspicious = await SafeDevice.isJailBroken ||
-                           await SafeDevice.isRealDevice == false ||
-                           await SafeDevice.isProxyEnabled;
+                           await SafeDevice.isRealDevice == false;
         if (isSuspicious) {
           await _supabase.auth.signOut();
           throw "Güvensiz cihaz veya VPN algılandı.";

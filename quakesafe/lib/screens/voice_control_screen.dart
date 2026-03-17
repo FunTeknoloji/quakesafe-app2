@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../services/settings_provider.dart';
 import '../translations.dart';
 import 'earthquakes/earthquakes_screen.dart';
-import 'widgets/status_report_widget.dart';
+import '../widgets/status_report_widget.dart';
 
 class VoiceControlScreen extends StatefulWidget {
   const VoiceControlScreen({super.key});
