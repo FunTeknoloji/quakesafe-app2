@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
       case 'weather': return GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WeatherScreen())),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => WeatherScreen())),
           child: const WeatherWidget(key: ValueKey('weather_widget'))
         );
       default: return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
