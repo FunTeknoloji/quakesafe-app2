@@ -24,31 +24,47 @@ Future<void> _backgroundCallback(Uri? uri) async {
 }
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  final notificationService = NotificationService();
-  await notificationService.init();
+    // 1. Core Supabase initialization first
+    await Supabase.initialize(
+      url: AppConstants.supabaseUrl,
+      anonKey: AppConstants.supabaseAnonKey,
+    );
 
-  final earlyWarningService = EarlyWarningService();
-  earlyWarningService.startDetection();
+    // 2. Local persistence
+    await Hive.initFlutter();
+    await Hive.openBox('settings');
+    await Hive.openBox('cache');
 
-  await Hive.initFlutter();
-  await Hive.openBox('settings');
-  await Hive.openBox('cache');
+    // 3. System services
+    final notificationService = NotificationService();
+    await notificationService.init();
 
-  HomeWidget.registerInteractivityCallback(_backgroundCallback);
+    final earlyWarningService = EarlyWarningService();
+    earlyWarningService.startDetection();
 
-  await Supabase.initialize(
-    url: AppConstants.supabaseUrl,
-    anonKey: AppConstants.supabaseAnonKey,
-  );
+    HomeWidget.registerInteractivityCallback(_backgroundCallback);
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => SettingsProvider(),
-      child: const QuakeSafeApp(),
-    ),
-  );
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => SettingsProvider(),
+        child: const QuakeSafeApp(),
+      ),
+    );
+  } catch (e) {
+    debugPrint("Startup Error: $e");
+    // Fallback app to show error if initialization fails
+    runApp(MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text("Hata: $e", style: const TextStyle(color: Colors.white)),
+        ),
+      ),
+    ));
+  }
 }
 
 class QuakeSafeApp extends StatelessWidget {
@@ -71,11 +87,46 @@ class QuakeSafeApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
   @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  void _checkStatus() async {
+    // Artificial delay to ensure all services are fully bonded and active
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) setState(() => _isReady = true);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_isReady) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF000000),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/images/logo.png', width: 80),
+              const SizedBox(height: 24),
+              const CircularProgressIndicator(color: Colors.purple, strokeWidth: 2),
+            ],
+          ),
+        ),
+      );
+    }
+
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null) {
       return const MainNavigationScreen();

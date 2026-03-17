@@ -8,7 +8,6 @@ class EarlyWarningService {
   factory EarlyWarningService() => _instance;
   EarlyWarningService._internal();
 
-  final _supabase = Supabase.instance.client;
   final _notificationService = NotificationService();
 
   StreamSubscription<UserAccelerometerEvent>? _accelerometerSubscription;
@@ -16,6 +15,7 @@ class EarlyWarningService {
   DateTime? _lastAlertTime;
 
   void startDetection() {
+    final supabase = Supabase.instance.client;
     _accelerometerSubscription = userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       double acceleration = (event.x.abs() + event.y.abs() + event.z.abs());
       if (acceleration > _threshold) {
@@ -24,7 +24,7 @@ class EarlyWarningService {
     });
 
     // Listen for global alerts from Supabase
-    _supabase.from('notifications_quakesafe')
+    supabase.from('notifications_quakesafe')
       .stream(primaryKey: ['id'])
       .listen((List<Map<String, dynamic>> data) {
         if (data.isNotEmpty) {
@@ -43,9 +43,10 @@ class EarlyWarningService {
 
       // Report tremor to Supabase for aggregation
       try {
-        final userId = _supabase.auth.currentUser?.id;
+        final supabase = Supabase.instance.client;
+        final userId = supabase.auth.currentUser?.id;
         if (userId != null) {
-          await _supabase.from('notifications_quakesafe').insert({
+          await supabase.from('notifications_quakesafe').insert({
             'user_id': userId,
             'title': '⚠️ SARSINTI ALGILANDI',
             'message': 'Cihazınızda yüksek şiddetli bir sarsıntı algılandı ($strength). Lütfen güvenli bir yere geçin.',
