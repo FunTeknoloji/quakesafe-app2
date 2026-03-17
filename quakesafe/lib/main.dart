@@ -12,6 +12,7 @@ import 'screens/profile/profile_screen.dart';
 import 'screens/intro/intro_screen.dart';
 import 'services/settings_provider.dart';
 import 'services/notification_service.dart';
+import 'services/early_warning_service.dart';
 import 'constants.dart';
 import 'translations.dart';
 
@@ -27,6 +28,9 @@ Future<void> main() async {
 
   final notificationService = NotificationService();
   await notificationService.init();
+
+  final earlyWarningService = EarlyWarningService();
+  earlyWarningService.startDetection();
 
   await Hive.initFlutter();
   await Hive.openBox('settings');

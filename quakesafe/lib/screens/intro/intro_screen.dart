@@ -23,6 +23,8 @@ class _IntroScreenState extends State<IntroScreen> {
     Permission.microphone,
     Permission.contacts,
     Permission.notification,
+    Permission.phone,
+    Permission.systemAlertWindow,
   ];
 
   Future<void> _requestAllPermissions() async {

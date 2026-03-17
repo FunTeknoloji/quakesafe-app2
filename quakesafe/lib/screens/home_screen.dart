@@ -70,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
       HomeCard(id: 'emergency_numbers', title: 'Acil Numaralar', icon: _iconMap['emergency_numbers']!),
       HomeCard(id: 'assembly_areas', title: 'Toplanma Alanları', icon: _iconMap['assembly_areas']!),
       HomeCard(id: 'daily_tip', title: 'Günün Bilgisi', icon: _iconMap['daily_tip']!),
-      HomeCard(id: 'quick_guides', title: 'Hızlı Rehberler', icon: _iconMap['quick_guides']!),
       HomeCard(id: 'weather', title: 'Hava Durumu', icon: _iconMap['weather']!),
       HomeCard(id: 'last_quake', title: 'Son Depremler', icon: _iconMap['last_quake']!),
       HomeCard(id: 'status_report', title: 'Durum Bildirme', icon: _iconMap['status_report']!),
@@ -109,7 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'recent_chats': return const RecentChatsWidget();
       case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
-      case 'weather': return const WeatherWidget(key: ValueKey('weather_widget'));
+      case 'weather': return GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WeatherScreen())),
+          child: const WeatherWidget(key: ValueKey('weather_widget'))
+        );
       default: return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);
     }
   }

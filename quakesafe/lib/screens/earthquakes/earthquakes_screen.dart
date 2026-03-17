@@ -14,9 +14,11 @@ class EarthquakesScreen extends StatefulWidget {
 }
 
 class _EarthquakesScreenState extends State<EarthquakesScreen> {
-  List<dynamic> _quakes = [];
+  List<dynamic> _allQuakes = [];
+  List<dynamic> _filteredQuakes = [];
   bool _isLoading = true;
   String? _error;
+  double _minMagnitude = 0.0;
 
   @override
   void initState() {
@@ -36,7 +38,8 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
         final data = json.decode(response.body);
         if (data['status'] == true) {
           setState(() {
-            _quakes = data['result'] ?? [];
+            _allQuakes = data['result'] ?? [];
+            _applyFilter();
             _isLoading = false;
           });
         } else {
@@ -60,6 +63,15 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
     }
   }
 
+  void _applyFilter() {
+    setState(() {
+      _filteredQuakes = _allQuakes.where((q) {
+        final mag = double.tryParse(q['mag'].toString()) ?? 0;
+        return mag >= _minMagnitude;
+      }).toList();
+    });
+  }
+
   void _showDetails(dynamic quake) {
     showModalBottomSheet(
       context: context,
@@ -68,56 +80,58 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.6,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          color: const Color(0xFF111111),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Container(width: 50, height: 5, decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(10))),
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10))),
             ),
-            const SizedBox(height: 30),
-            Text(quake['title'] ?? "Bilinmiyor", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 20),
-            const Divider(color: Colors.white12),
-            const SizedBox(height: 20),
-            _detailRow(Icons.waves, "Büyüklük", "${quake['mag']}"),
-            _detailRow(Icons.vertical_align_bottom, "Derinlik", "${quake['depth']} km"),
-            _detailRow(Icons.calendar_today, "Tarih", quake['date_time'] ?? "-"),
-            _detailRow(Icons.location_on, "Koordinat", quake['geojson'] != null ? "${quake['geojson']['coordinates'][1]}, ${quake['geojson']['coordinates'][0]}" : "-"),
+            const SizedBox(height: 32),
+            Text(quake['title'] ?? "Bilinmiyor", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white)),
+            const SizedBox(height: 8),
+            Text(quake['date_time'] ?? "-", style: const TextStyle(color: Colors.white38, fontSize: 14)),
+            const SizedBox(height: 32),
+            _detailRow(Icons.waves, "Büyüklük", "${quake['mag']}", _getMagColor(double.tryParse(quake['mag'].toString()) ?? 0)),
+            _detailRow(Icons.vertical_align_bottom, "Derinlik", "${quake['depth']} km", Colors.blueAccent),
+            _detailRow(Icons.location_on, "Koordinat", quake['geojson'] != null ? "${quake['geojson']['coordinates'][1]}, ${quake['geojson']['coordinates'][0]}" : "-", Colors.orangeAccent),
             const Spacer(),
             SizedBox(
               width: double.infinity,
-              height: 55,
+              height: 60,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white10,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
                 child: const Text("Kapat", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
         ),
-      ).animate().slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutBack),
+      ).animate().slideY(begin: 1, end: 0, duration: 400.ms, curve: Curves.easeOutCubic),
     );
   }
 
-  Widget _detailRow(IconData icon, String label, String value) {
+  Widget _detailRow(IconData icon, String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: Colors.purple, size: 22),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 15),
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 16)),
+          const SizedBox(width: 16),
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 16)),
           const Spacer(),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.white)),
         ],
       ),
     );
@@ -126,60 +140,116 @@ class _EarthquakesScreenState extends State<EarthquakesScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
+    final lang = settings.language;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(AppTranslations.t('last_quakes', settings.language), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        actions: [IconButton(onPressed: _fetchQuakes, icon: const Icon(Icons.refresh, color: Colors.purple))],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: true,
+            pinned: true,
+            backgroundColor: Colors.black,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(AppTranslations.t('quakes', lang), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20)),
+              centerTitle: true,
+            ),
+            actions: [
+              IconButton(onPressed: _fetchQuakes, icon: const Icon(Icons.refresh, color: Colors.purple)),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  _filterChip("Tümü", 0.0),
+                  _filterChip("3.0+", 3.0),
+                  _filterChip("4.0+", 4.0),
+                  _filterChip("5.0+", 5.0),
+                ],
+              ),
+            ),
+          ),
+          _isLoading
+              ? const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: Colors.purple)))
+              : _error != null
+                  ? SliverFillRemaining(child: Center(child: Text(_error!, style: const TextStyle(color: Colors.red))))
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final quake = _filteredQuakes[index];
+                          final mag = double.tryParse(quake['mag'].toString()) ?? 0;
+                          return _buildQuakeTile(quake, mag, index);
+                        },
+                        childCount: _filteredQuakes.length,
+                      ),
+                    ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.purple))
-          : _error != null
-              ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  itemCount: _quakes.length,
-                  itemBuilder: (context, index) {
-                    final quake = _quakes[index];
-                    final mag = double.tryParse(quake['mag'].toString()) ?? 0;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: Container(
-                          width: 50,
-                          height: 50,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: _getMagColor(mag).withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: _getMagColor(mag).withValues(alpha: 0.3)),
-                          ),
-                          child: Text("${quake['mag']}", style: TextStyle(color: _getMagColor(mag), fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                        title: Text(quake['title'] ?? "Bilinmiyor", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(quake['date_time'] ?? "-", style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white24),
-                        onTap: () => _showDetails(quake),
-                      ),
-                    ).animate().fadeIn(delay: (index * 10).ms).slideX(begin: 0.05, end: 0);
-                  },
-                ),
     );
+  }
+
+  Widget _filterChip(String label, double val) {
+    bool isSelected = _minMagnitude == val;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: ChoiceChip(
+        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.white38, fontWeight: FontWeight.bold, fontSize: 12)),
+        selected: isSelected,
+        onSelected: (s) {
+          if (s) {
+            setState(() {
+              _minMagnitude = val;
+              _applyFilter();
+            });
+          }
+        },
+        backgroundColor: const Color(0xFF111111),
+        selectedColor: Colors.purple,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide.none),
+        showCheckmark: false,
+      ),
+    );
+  }
+
+  Widget _buildQuakeTile(dynamic quake, double mag, int index) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111111),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        leading: Container(
+          width: 55,
+          height: 55,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: _getMagColor(mag).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: _getMagColor(mag).withValues(alpha: 0.2)),
+          ),
+          child: Text("${quake['mag']}", style: TextStyle(color: _getMagColor(mag), fontWeight: FontWeight.w900, fontSize: 20)),
+        ),
+        title: Text(quake['title'] ?? "Bilinmiyor", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(quake['date_time'] ?? "-", style: const TextStyle(color: Colors.white24, fontSize: 12)),
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.white10),
+        onTap: () => _showDetails(quake),
+      ),
+    ).animate().fadeIn(delay: (index * 20).ms).slideX(begin: 0.05, end: 0);
   }
 
   Color _getMagColor(double mag) {
     if (mag < 3.0) return Colors.greenAccent;
+    if (mag < 4.0) return Colors.yellowAccent;
     if (mag < 5.0) return Colors.orangeAccent;
     return Colors.redAccent;
   }

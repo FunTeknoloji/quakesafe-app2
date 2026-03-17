@@ -14,6 +14,8 @@ import '../../services/mesh_service.dart';
 import 'package:hive/hive.dart';
 import 'package:dio/dio.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'group_settings_screen.dart';
 import 'dart:io';
 
 class ChatScreen extends StatefulWidget {
@@ -41,6 +43,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isMeshEnabled = false;
   List<dynamic> _members = [];
   Map<String, String> _translations = {};
+  bool _isAdmin = false;
 
   late final Stream<List<Map<String, dynamic>>> _messagesStream;
   List<Map<String, dynamic>> _cachedMessages = [];
@@ -56,6 +59,21 @@ class _ChatScreenState extends State<ChatScreen> {
         .stream(primaryKey: ['id'])
         .eq('group_id', widget.groupId)
         .order('created_at', ascending: false);
+    _checkAdminStatus();
+    _updatePresence();
+  }
+
+  void _checkAdminStatus() async {
+    final res = await _supabase.from('family_members').select('role').eq('group_id', widget.groupId).eq('user_id', _supabase.auth.currentUser!.id).single();
+    setState(() { _isAdmin = res['role'] == 'admin'; });
+  }
+
+  void _updatePresence() {
+     _supabase.from('city_presence').upsert({
+       'user_id': _supabase.auth.currentUser!.id,
+       'last_seen': DateTime.now().toIso8601String(),
+       'is_online': true,
+     });
   }
 
   void _loadCachedMessages() {
@@ -434,33 +452,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _showGroupDetails() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF161616),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const Text("Grup Üyeleri", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _members.length,
-                itemBuilder: (context, index) {
-                   final m = _members[index]['profiles_quakesafe'];
-                   return ListTile(
-                     leading: const CircleAvatar(child: Icon(Icons.person)),
-                     title: Text(m['full_name'] ?? "İsimsiz", style: const TextStyle(color: Colors.white)),
-                     trailing: const Icon(Icons.circle, color: Colors.green, size: 10),
-                   );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => FamilyGroupSettingsScreen(groupId: widget.groupId, groupName: widget.groupName, isAdmin: _isAdmin)));
   }
 
   void _editMessage(String id, String current) {
