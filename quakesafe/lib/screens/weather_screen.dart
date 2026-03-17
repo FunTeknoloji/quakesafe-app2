@@ -3,6 +3,7 @@ import '../services/weather_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
 import '../services/settings_provider.dart';
 import '../translations.dart';
 

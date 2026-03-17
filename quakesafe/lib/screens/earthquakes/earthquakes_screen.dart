@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
 import '../../services/settings_provider.dart';
 import '../../translations.dart';
 
