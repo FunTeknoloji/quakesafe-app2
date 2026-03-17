@@ -9,6 +9,7 @@ import '../widgets/compass_widget.dart';
 import '../widgets/daily_tip_widget.dart';
 import '../widgets/assembly_area_widget.dart';
 import '../widgets/weather_widget.dart';
+import 'weather_screen.dart';
 import '../widgets/last_quake_widget.dart';
 import '../widgets/placeholder_card.dart';
 import 'notifications/notifications_screen.dart';
@@ -109,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'daily_tip': return DailyTipWidget(key: ValueKey(card.id));
       case 'assembly_areas': return AssemblyAreaWidget(key: ValueKey(card.id));
       case 'weather': return GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => WeatherScreen())),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WeatherScreen())),
           child: const WeatherWidget(key: ValueKey('weather_widget'))
         );
       default: return PlaceholderCard(key: ValueKey(card.id), title: card.title, icon: card.icon);

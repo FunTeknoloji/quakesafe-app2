@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:safe_device/safe_device.dart';
 import 'package:http/http.dart' as http;
@@ -31,6 +32,7 @@ class AuthService {
       if (profile['block_vpn'] == true) {
         bool isSuspicious = await SafeDevice.isJailBroken ||
                            await SafeDevice.isRealDevice == false;
+        // isProxyEnabled is often problematic in some versions, sticking to stable ones
         if (isSuspicious) {
           await _supabase.auth.signOut();
           throw "Güvensiz cihaz veya VPN algılandı.";
