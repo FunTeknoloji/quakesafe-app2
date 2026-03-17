@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_provider.dart';
 import '../translations.dart';
@@ -37,12 +38,16 @@ class StatusReportWidget extends StatelessWidget {
 
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isSafe ? "Güvende olduğunuz bildirildi." : "Yardım talebi gönderildi!")),
+          SnackBar(
+            content: Text(isSafe ? "Güvende olduğunuz bildirildi." : "Yardım talebi gönderildi!"),
+            backgroundColor: isSafe ? Colors.green : Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e"), behavior: SnackBarBehavior.floating));
       }
     }
   }
@@ -50,7 +55,7 @@ class StatusReportWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFF0D0D0D),
@@ -60,8 +65,15 @@ class StatusReportWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Durumunuz", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-          const Text("AİLENİZE GÜVENDE OLDUĞUNUZU BİLDİRİN", style: TextStyle(fontSize: 10, color: Colors.white24, letterSpacing: 1, fontWeight: FontWeight.bold)),
+          const Row(
+            children: [
+              Icon(Icons.shield_outlined, color: Colors.purple, size: 24),
+              SizedBox(width: 12),
+              Text("Güvenlik Durumu", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text("AİLENİZE DURUMUNUZU ANLIK OLARAK BİLDİRİN", style: TextStyle(fontSize: 9, color: Colors.white24, letterSpacing: 0.5, fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           Row(
             children: [
@@ -70,7 +82,7 @@ class StatusReportWidget extends StatelessWidget {
                   context,
                   true,
                   "GÜVENDEYİM",
-                  Icons.verified_user_outlined,
+                  Icons.check_circle,
                   Colors.green,
                 ),
               ),
@@ -80,7 +92,7 @@ class StatusReportWidget extends StatelessWidget {
                   context,
                   false,
                   "YARDIM LAZIM",
-                  Icons.report_problem_outlined,
+                  Icons.warning_rounded,
                   Colors.red,
                 ),
               ),
@@ -97,20 +109,16 @@ class StatusReportWidget extends StatelessWidget {
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: const Color(0xFF161616),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+          border: Border.all(color: color.withValues(alpha: 0.1)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: color, size: 24),
-            ),
+            Icon(icon, color: color, size: 36).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 1000.ms),
             const SizedBox(height: 12),
-            Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+            Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
           ],
         ),
       ),

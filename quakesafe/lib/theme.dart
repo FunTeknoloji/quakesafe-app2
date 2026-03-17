@@ -14,7 +14,7 @@ class AppTheme {
       primary: primaryPurple,
       secondary: primaryPurple,
       surface: surfaceColor,
-      background: pureBlack,
+      onSurface: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: pureBlack,

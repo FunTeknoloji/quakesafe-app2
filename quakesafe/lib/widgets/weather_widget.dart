@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class WeatherWidget extends StatefulWidget {
   const WeatherWidget({super.key});
@@ -34,9 +35,13 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     if (_isLoading) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        height: 100,
-        decoration: BoxDecoration(color: const Color(0xFF161616), borderRadius: BorderRadius.circular(25)),
-        child: const Center(child: CircularProgressIndicator(color: Colors.purple)),
+        height: 110,
+        decoration: BoxDecoration(
+          color: const Color(0xFF161616),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: const Center(child: CircularProgressIndicator(color: Colors.purple, strokeWidth: 2)),
       );
     }
 
@@ -44,33 +49,77 @@ class _WeatherWidgetState extends State<WeatherWidget> {
 
     final current = _weatherData!['current_weather'];
     final temp = current['temperature'];
+    final colors = _getWeatherColors(current['weathercode']);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 100,
+      height: 110,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: _getWeatherColors(current['weathercode']),
+          colors: [colors[0], colors[1].withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: colors[1].withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Stack(
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("${temp.toStringAsFixed(0)}°  ${_getWeatherName(current['weathercode'])}",
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
-                const Text("OPEN-METEO", style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
-              ],
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Icon(
+                _getWeatherIcon(current['weathercode']),
+                size: 150,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
             ),
-            Icon(_getWeatherIcon(current['weathercode']), size: 40, color: Colors.white38),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${temp.toStringAsFixed(0)}°",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -2,
+                        ),
+                      ),
+                      Text(
+                        _getWeatherName(current['weathercode']),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _getWeatherIcon(current['weathercode']),
+                    size: 48,
+                    color: Colors.white,
+                  ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                   .moveY(begin: -5, end: 5, duration: 2000.ms),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -78,10 +127,10 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   }
 
   List<Color> _getWeatherColors(int code) {
-    if (code == 0) return [const Color(0xFFFFA000), const Color(0xFFFF6F00)]; // Clear
-    if (code <= 3) return [const Color(0xFF546E7A), const Color(0xFF263238)]; // Cloudy
-    if (code <= 67) return [const Color(0xFF1E88E5), const Color(0xFF0D47A1)]; // Rain
-    return [const Color(0xFF4527A0), const Color(0xFF311B92)]; // Other/Storm
+    if (code == 0) return [const Color(0xFFFF9800), const Color(0xFFF57C00)]; // Clear
+    if (code <= 3) return [const Color(0xFF607D8B), const Color(0xFF455A64)]; // Cloudy
+    if (code <= 67) return [const Color(0xFF2196F3), const Color(0xFF1976D2)]; // Rain
+    return [const Color(0xFF673AB7), const Color(0xFF512DA8)]; // Other/Storm
   }
 
   String _getWeatherName(int code) {
@@ -95,9 +144,9 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   }
 
   IconData _getWeatherIcon(int code) {
-    if (code == 0) return Icons.wb_sunny_outlined;
-    if (code <= 3) return Icons.wb_cloudy_outlined;
-    if (code <= 67) return Icons.umbrella_outlined;
-    return Icons.thunderstorm_outlined;
+    if (code == 0) return Icons.wb_sunny;
+    if (code <= 3) return Icons.cloud;
+    if (code <= 67) return Icons.umbrella;
+    return Icons.thunderstorm;
   }
 }
